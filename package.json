@@ -1,28 +1,34 @@
 {
   "name": "thehelp-messaging",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "main": "src/server/index.js",
+
   "dependencies": {
     "async": "0.2.x",
     "lodash": "2.x",
-    "thehelp-core": "git+ssh://git@infra:thehelp-core#v1.2.0",
+    "nodemailer": "0.5.15"
+    "superagent": "0.15.x",
     "winston": "0.7.x",
-    "superagent": "~0.15.7",
-    "nodemailer": "~0.5.15"
+  },
+  "peerDependencies": {
+    "thehelp-core": "1.x",
   },
   "devDependencies": {
     "blanket": "https://github.com/NiKnight/blanket/tarball/changes",
     "grunt": "0.4.x",
+    "thehelp-core": "git+ssh://git@infra:thehelp-core#v1.2.0",
     "thehelp-project": "git+ssh://git@infra:thehelp-project#v2.1.0",
     "thehelp-test": "git+ssh://git@infra:thehelp-test#v2.0.0"
   },
+
   "scripts": {
     "blanket": {
       "data-cover-only": "src",
       "data-cover-never": "['lib/','node_modules/','test/','src/client']"
     }
   },
+
   "author": "Scott Nonnenberg",
   "repository": {
     "type": "git",
