@@ -18,6 +18,4 @@ describe('thehelp-twilio', function() {
     expect(index).to.have.property('Twilio').that.exist;
   });
 
-
 });
-
