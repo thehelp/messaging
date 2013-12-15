@@ -1,0 +1,126 @@
+<!DOCTYPE html><html lang="en"><head><title>src/server/twilio</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="src/server/twilio"><meta name="groc-project-path" content="src/server/twilio.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/server/twilio.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="twilio">Twilio</h1>
+
+<p>This class makes it easy to send text messages with
+<a href="http://www.twilio.com/docs/api/rest">Twilio's REST API</a>. Two environment variables
+are required:</p>
+
+<ol>
+<li>TWILIO_KEY - your "Account SID" on your <a href="https://www.twilio.com/user/account">Account Detail</a> page.</li>
+<li>TWILIO_TOKEN - your "Auth Token" on that same page.</li>
+</ol></div></div><div class="code"><div class="wrapper"><span class="s1">&#39;use strict&#39;</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">winston</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;winston&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">superagent</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;superagent&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">core</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;thehelp-core&#39;</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">general</span> <span class="o">=</span> <span class="nx">core</span><span class="p">.</span><span class="nx">general</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">string</span> <span class="o">=</span> <span class="nx">core</span><span class="p">.</span><span class="nx">string</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">Twilio</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="cm">/*jshint maxcomplexity: 9 */</span>
+
+  <span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{};</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">key</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">key</span> <span class="o">||</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">TWILIO_KEY</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">key</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;need to set environment variable (TWILIO_KEY)&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">token</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">token</span> <span class="o">||</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">TWILIO_TOKEN</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">token</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;need to set environment variable (TWILIO_TOKEN)&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">general</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">general</span> <span class="o">||</span> <span class="nx">general</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">winston</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">winston</span> <span class="o">||</span> <span class="nx">winston</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">superagent</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">superagent</span> <span class="o">||</span> <span class="nx">superagent</span><span class="p">;</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="commonly-used-methods">Commonly-Used Methods</h2></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>send</code> assembles the right request for
+<a href="https://www.twilio.com/docs/api/rest/sending-sms">Twilio's Send REST API</a>,
+parsing the return value for successful send status and returning an error
+if it isn't found.</p>
+
+<p><em>NOTE: It will truncate any message you send if necessary, warning in the log when
+that becomes necessary.</em></p></div></div><div class="code"><div class="wrapper"><span class="nx">Twilio</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">send</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{};</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkPrecondition</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">to</span><span class="p">,</span> <span class="s1">&#39;twilio/send: need options.to!&#39;</span><span class="p">,</span> <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkPrecondition</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">from</span><span class="p">,</span> <span class="s1">&#39;twilio/send: need options.from!&#39;</span><span class="p">,</span> <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkPrecondition</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">body</span><span class="p">,</span> <span class="s1">&#39;twilio/send: need options.body!&#39;</span><span class="p">,</span> <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kd">var</span> <span class="nx">truncated</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">truncateForSMS</span><span class="p">(</span><span class="nx">options</span><span class="p">.</span><span class="nx">body</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">truncated</span> <span class="o">!==</span> <span class="nx">options</span><span class="p">.</span><span class="nx">body</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">winston</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="s1">&#39;Twilio.send - message was truncated before sending. Original: &#39;</span> <span class="o">+</span> <span class="nx">options</span><span class="p">.</span><span class="nx">body</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="nx">superagent</span>
+    <span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;https://api.twilio.com/2010-04-01/Accounts/&#39;</span> <span class="o">+</span> <span class="k">this</span><span class="p">.</span><span class="nx">key</span> <span class="o">+</span> <span class="s1">&#39;/SMS/Messages.json&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">auth</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">token</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">type</span><span class="p">(</span><span class="s1">&#39;form&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">send</span><span class="p">({</span>
+      <span class="nx">To</span><span class="o">:</span> <span class="nx">options</span><span class="p">.</span><span class="nx">to</span><span class="p">,</span>
+      <span class="nx">From</span><span class="o">:</span> <span class="nx">options</span><span class="p">.</span><span class="nx">from</span><span class="p">,</span>
+      <span class="nx">Body</span><span class="o">:</span> <span class="nx">truncated</span>
+    <span class="p">})</span>
+    <span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">//I&#39;ve seen only 201 for success. But we allow for 202 as well.</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span> <span class="o">&gt;</span> <span class="mi">202</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">message</span> <span class="o">||</span> <span class="s1">&#39;Something went wrong!&#39;</span><span class="p">));</span>
+      <span class="p">}</span>
+
+      <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">body</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="utility-methods">Utility Methods</h2></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>escapeCharacterCount</code> finds the number of characters that require escaping
+io text messages, as listed in
+<a href="http://www.twilio.com/engineering/2012/11/08/adventures-in-unicode-sms">this blog post</a>.</p></div></div><div class="code"><div class="wrapper"><span class="nx">Twilio</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">escapeCharacterCount</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">escapes</span> <span class="o">=</span> <span class="sr">/[\|\^{}€\[~\]\\]/g</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">match</span> <span class="o">=</span> <span class="nx">text</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">escapes</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">match</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">result</span> <span class="o">+=</span> <span class="nx">match</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">result</span><span class="p">;</span>
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>containsUnicode</code> tries to determine if a text contains characters which will flip the
+text message infrastructure into a different encoding, reducing the number of
+available characters to 70.</p>
+
+<p>We do a simple check, looking for just the first block of characters from from
+<a href="http://en.wikipedia.org/wiki/ISO/IEC_8859-1">Part 1: Latin alphabet No. 1 (ISO/IEC 8859-1)</a>. It's an imperfect stand-in
+for the characters actually supported
+in the <a href="http://en.wikipedia.org/wiki/GSM_03.38#GSM_7_bit_default_alphabet_and_extension_table_of_3GPP_TS_23.038_.2F_GSM_03.38">GSM 7-bit encoding system</a>,
+so if texting ever gets very important to an app, and it's sending input from users,
+we'll need to get a lot better at this.</p></div></div><div class="code"><div class="wrapper"><span class="nx">Twilio</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">containsUnicode</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">text</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">(</span><span class="sr">/[^\u0000-\u007E]/</span><span class="p">).</span><span class="nx">test</span><span class="p">(</span><span class="nx">text</span><span class="p">);</span>
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>truncateForSMS</code> goes through the full set of steps required to ensure that a given
+SMS doesn't get truncated:</p>
+
+<ol>
+<li>The <code>max</code> starts at 160</li>
+<li>If the string contains unicode, that <code>max</code> goes down to 70</li>
+<li>If there's some additional text that still needs to be added to the message, of length
+<code>buffer</code>, we subtract that from the <code>max</code>.</li>
+<li>We subract the number of characters requiring escaping from the <code>max</code>.</li>
+<li>Finally, we return the truncated string.</li>
+</ol></div></div><div class="code"><div class="wrapper"><span class="nx">Twilio</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">truncateForSMS</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">text</span><span class="p">,</span> <span class="nx">buffer</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">max</span> <span class="o">=</span> <span class="mi">160</span><span class="p">;</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">containsUnicode</span><span class="p">(</span><span class="nx">text</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nx">max</span> <span class="o">=</span> <span class="mi">70</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">buffer</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">max</span> <span class="o">-=</span> <span class="nx">buffer</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="nx">max</span> <span class="o">-=</span> <span class="k">this</span><span class="p">.</span><span class="nx">escapeCharacterCount</span><span class="p">(</span><span class="nx">text</span><span class="p">);</span>
+
+  <span class="k">return</span> <span class="nx">string</span><span class="p">.</span><span class="nx">truncate</span><span class="p">(</span><span class="nx">max</span><span class="p">,</span> <span class="nx">text</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">Twilio</span><span class="p">;</span></div></div></div></div></body></html>

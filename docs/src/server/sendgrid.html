@@ -1,0 +1,76 @@
+<!DOCTYPE html><html lang="en"><head><title>src/server/sendgrid</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="src/server/sendgrid"><meta name="groc-project-path" content="src/server/sendgrid.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/server/sendgrid.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="sendgrid">Sendgrid</h1>
+
+<p>This class is a thin wrappper around the <code>nodemailer</code> node module, sending email
+via <a href="http://sendgrid.com/docs/API_Reference/SMTP_API/index.html">Sendgrid's SMTP API</a>. Two
+environment variables are required</p>
+
+<ol>
+<li>SENDGRID_USERNAME - this is your raw Sendgrid account username</li>
+<li>SENDGRID_PASSWORD - unfortunately, this is the same password as your account. Not an account
+API access token. :0(</li>
+</ol></div></div><div class="code"><div class="wrapper"><span class="s1">&#39;use strict&#39;</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">winston</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;winston&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">nodemailer</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;nodemailer&#39;</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">core</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;thehelp-core&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">general</span> <span class="o">=</span> <span class="nx">core</span><span class="p">.</span><span class="nx">general</span><span class="p">;</span>
+
+<span class="kd">function</span> <span class="nx">SendGrid</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{};</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">username</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">username</span> <span class="o">||</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">SENDGRID_USERNAME</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">username</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;need to provide sendgrid username or set environment variable&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">password</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">password</span> <span class="o">||</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">SENDGRID_PASSWORD</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">password</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;need to provide sendgrid password or set environment variable&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="commonly-used-methods">Commonly-Used Methods</h2></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>send</code> checks that all four required keys are included on the provided
+<code>email</code> object: <code>to</code>, <code>from</code>, <code>body</code>, and <code>subject</code>. Then we create a <code>nodemailer</code>
+transport, send with it, and immediately close the transport (this class isn't
+designed for high-volume sending).</p></div></div><div class="code"><div class="wrapper"><span class="nx">SendGrid</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">send</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">email</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">email</span> <span class="o">=</span> <span class="nx">email</span> <span class="o">||</span> <span class="p">{};</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkPrecondition</span><span class="p">(</span><span class="nx">email</span><span class="p">.</span><span class="nx">to</span><span class="p">,</span> <span class="s1">&#39;sendgrid/send: need email.to!&#39;</span><span class="p">,</span> <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkPrecondition</span><span class="p">(</span><span class="nx">email</span><span class="p">.</span><span class="nx">from</span><span class="p">,</span> <span class="s1">&#39;sendgrid/send: need email.from!&#39;</span><span class="p">,</span> <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkPrecondition</span><span class="p">(</span><span class="nx">email</span><span class="p">.</span><span class="nx">body</span><span class="p">,</span> <span class="s1">&#39;sendgrid/send: need email.body!&#39;</span><span class="p">,</span> <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkPrecondition</span><span class="p">(</span><span class="nx">email</span><span class="p">.</span><span class="nx">subject</span><span class="p">,</span> <span class="s1">&#39;sendgrid/send: need email.subject!&#39;</span><span class="p">,</span> <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="nx">email</span><span class="p">.</span><span class="nx">text</span> <span class="o">=</span> <span class="nx">email</span><span class="p">.</span><span class="nx">body</span><span class="p">;</span>
+  <span class="k">delete</span> <span class="nx">email</span><span class="p">.</span><span class="nx">body</span><span class="p">;</span>
+
+  <span class="kd">var</span> <span class="nx">transport</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">createTransport</span><span class="p">();</span>
+
+  <span class="nx">transport</span><span class="p">.</span><span class="nx">sendMail</span><span class="p">(</span><span class="nx">email</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">transport</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkError</span><span class="p">(</span><span class="s1">&#39;Sendgrid/send/sendMail&#39;</span><span class="p">,</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
+      <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">winston</span><span class="p">.</span><span class="nx">verbose</span><span class="p">(</span><span class="s1">&#39;sendgrid/send successful: &#39;</span> <span class="o">+</span> <span class="nx">response</span><span class="p">.</span><span class="nx">message</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">response</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="utility-methods">Utility Methods</h2></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>createTransport</code> supplies <code>nodemailer</code> what it needs to get ready to send.</p></div></div><div class="code"><div class="wrapper"><span class="nx">SendGrid</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">createTransport</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">nodemailer</span><span class="p">.</span><span class="nx">createTransport</span><span class="p">(</span><span class="s1">&#39;SMTP&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="nx">service</span><span class="o">:</span> <span class="s1">&#39;SendGrid&#39;</span><span class="p">,</span>
+    <span class="nx">auth</span><span class="o">:</span> <span class="p">{</span>
+      <span class="nx">user</span><span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">username</span><span class="p">,</span>
+      <span class="nx">pass</span><span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">password</span>
+    <span class="p">}</span>
+  <span class="p">});</span>
+<span class="p">};</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">SendGrid</span><span class="p">;</span></div></div></div></div></body></html>
