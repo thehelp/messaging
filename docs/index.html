@@ -1,21 +1,74 @@
-<!DOCTYPE html><html lang="en"><head><title>index</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="index"><meta name="groc-project-path" content="README.md"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">README.md</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="thehelp-twilio">thehelp-twilio</h1>
+<!DOCTYPE html><html lang="en"><head><title>index</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="index"><meta name="groc-project-path" content="README.md"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">README.md</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="thehelp-messaging">thehelp-messaging</h1>
 
-<p>High-level description goes here.</p>
+<p>Wrappers for messaging-related APIs. For now, Twilio and Sendgrid.</p>
+
+<h2 id="setup">Setup</h2>
+
+<p>To use the <code>Sendgrid</code> class, you'll need these two environment variables set:</p>
+
+<pre><code>"SENDGRID_USERNAME": "username"
+"SENDGRID_PASSWORD": "raw password, unfortunately"
+</code></pre>
+
+<p>To use the <code>Twilio</code> class, you'll need these two environment variables:</p>
+
+<pre><code>"TWILIO_KEY": "'Account SID' on your account detail page"
+"TWILIO_TOKEN": "your 'Auth Token' on that same page"
+</code></pre>
 
 <h2 id="usage">Usage</h2>
 
-<p>This is how to use it</p>
+<p>It's as easy as this for <code>Twilio</code>:</p>
 
-<pre><code>&lt;code here&gt;
+<pre><code>var Twilio = require('thehelp-messaging').Twilio;
+var twilio = new Twilio();
+var text = {
+  from: '+1 5551000000',
+  to: '+1 5551000000',
+  body: 'my first text mesage!'
+};
+
+twilio.send(text, function(err) {
+  if (err) {
+    throw err;
+  }
+});
+</code></pre>
+
+<p><code>Sendgrid</code> is just a little more complex:</p>
+
+<pre><code>var Sendgrid = require('thehelp-messaging').Sendgrid;
+var sendgrid = new Sendgrid();
+var email = {
+  from: 'Someone &lt;someone@somewhere&gt;',
+  to: 'recipient@somewhere',
+  subject: 'subject!',
+  body: 'Body of the message'
+};
+
+sendgrid.send(email, function(err) {
+  if (err) {
+    throw err;
+  }
+});
+</code></pre>
+
+<h2 id="tests">Tests</h2>
+
+<p>You'll need some additional environment variables to run all tests:</p>
+
+<pre><code>"NOTIFY_SMS_TO": "integration tests send here",
+"NOTIFY_SMS_FROM": "one of your twilio account's 'from' numbers",
+"NOTIFY_EMAIL_TO": "integration tests send here",
+"NOTIFY_EMAIL_FROM": "email will be 'from' this email account"
 </code></pre>
 
 <h2 id="history">History</h2>
 
-<h3 id="100">1.0.0</h3>
+<h3 id="010">0.1.0</h3>
 
 <ul>
-<li>item 1</li>
-<li>item 2</li>
+<li>Twilio and Sendgrid are functional</li>
 </ul>
 
 <h2 id="license">License</h2>
