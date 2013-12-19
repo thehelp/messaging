@@ -60,9 +60,13 @@ You'll need some additional environment variables to run all tests:
 
 ## History
 
+### 0.1.1
+
+* Fixing package.json parse errors
+
 ### 0.1.0
 
-+ Twilio and Sendgrid are functional
+* Twilio and Sendgrid are functional
 
 ## License
 
