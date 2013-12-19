@@ -7,12 +7,12 @@
   "dependencies": {
     "async": "0.2.x",
     "lodash": "2.x",
-    "nodemailer": "0.5.15"
+    "nodemailer": "0.5.15",
     "superagent": "0.15.x",
-    "winston": "0.7.x",
+    "winston": "0.7.x"
   },
   "peerDependencies": {
-    "thehelp-core": "1.x",
+    "thehelp-core": "1.x"
   },
   "devDependencies": {
     "blanket": "https://github.com/NiKnight/blanket/tarball/changes",
