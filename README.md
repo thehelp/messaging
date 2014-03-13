@@ -60,6 +60,12 @@ You'll need some additional environment variables to run all tests:
 
 ## History
 
+### 0.1.2
+
+* Patch updates: grunt, thehelp-core, thehelp-test
+* Minor version updates: thehelp-project, nodemailer, superagent
+* Fixed too-long lines after thehelp-project upgrade
+
 ### 0.1.1
 
 * Fixing package.json parse errors
