@@ -6,8 +6,8 @@ environment variables are required</p>
 
 <ol>
 <li>SENDGRID_USERNAME - this is your raw Sendgrid account username</li>
-<li>SENDGRID_PASSWORD - unfortunately, this is the same password as your account. Not an account
-API access token. :0(</li>
+<li>SENDGRID_PASSWORD - unfortunately, this is the same password as your account. Not an
+account API access token. :0(</li>
 </ol></div></div><div class="code"><div class="wrapper"><span class="s1">&#39;use strict&#39;</span><span class="p">;</span>
 
 <span class="kd">var</span> <span class="nx">winston</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;winston&#39;</span><span class="p">);</span>
@@ -43,7 +43,9 @@ designed for high-volume sending).</p></div></div><div class="code"><div class="
   <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkPrecondition</span><span class="p">(</span><span class="nx">email</span><span class="p">.</span><span class="nx">body</span><span class="p">,</span> <span class="s1">&#39;sendgrid/send: need email.body!&#39;</span><span class="p">,</span> <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
     <span class="k">return</span><span class="p">;</span>
   <span class="p">}</span>
-  <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkPrecondition</span><span class="p">(</span><span class="nx">email</span><span class="p">.</span><span class="nx">subject</span><span class="p">,</span> <span class="s1">&#39;sendgrid/send: need email.subject!&#39;</span><span class="p">,</span> <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">general</span><span class="p">.</span><span class="nx">checkPrecondition</span><span class="p">(</span><span class="nx">email</span><span class="p">.</span><span class="nx">subject</span><span class="p">,</span> <span class="s1">&#39;sendgrid/send: need email.subject!&#39;</span><span class="p">,</span>
+    <span class="nx">cb</span><span class="p">))</span> <span class="p">{</span>
+
     <span class="k">return</span><span class="p">;</span>
   <span class="p">}</span>
 

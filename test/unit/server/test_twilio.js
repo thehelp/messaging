@@ -38,39 +38,39 @@ describe('Twilio', function() {
 
   describe('#truncateForSMS', function() {
     it('takes string down to 70 characters if it has unicode', function() {
-      var text = '©2345678901234567890123456789012345678901234567890' + // 50 characters
-             '123456789012345678901'; // 21 characters
+      var text = '©2345678901234567890123456789012345678901234567890' + // 50 chars
+             '123456789012345678901'; // 21 chars
       text.length.should.equal(71);
-      var expected = '©2345678901234567890123456789012345678901234567890' + // 50 characters
-                 '12345678901234567...'; // 20 characters
+      var expected = '©2345678901234567890123456789012345678901234567890' + // 50 chars
+                 '12345678901234567...'; // 20 chars
 
       var actual = twilio.truncateForSMS(text);
       actual.should.equal(expected);
     });
 
-    it('takes string down to 159 characters if it has an escape character', function() {
-      var text = '[2345678901234567890123456789012345678901234567890' + // 50 characters
-             '12345678901234567890123456789012345678901234567890' + // 50 characters
-             '12345678901234567890123456789012345678901234567890' + // 50 characters
-             '1234567890'; // 10 characters
+    it('takes string down to 159 chars if it has an escape character', function() {
+      var text = '[2345678901234567890123456789012345678901234567890' + // 50 chars
+             '12345678901234567890123456789012345678901234567890' + // 50 chars
+             '12345678901234567890123456789012345678901234567890' + // 50 chars
+             '1234567890'; // 10 chars
       text.length.should.equal(160);
-      var expected = '[2345678901234567890123456789012345678901234567890' + // 50 characters
-                 '12345678901234567890123456789012345678901234567890' + // 50 characters
-                 '12345678901234567890123456789012345678901234567890' + // 50 characters
-                 '123456...'; // 9 characters
+      var expected = '[2345678901234567890123456789012345678901234567890' + // 50 chars
+                 '12345678901234567890123456789012345678901234567890' + // 50 chars
+                 '12345678901234567890123456789012345678901234567890' + // 50 chars
+                 '123456...'; // 9 chars
       var actual = twilio.truncateForSMS(text);
       actual.should.equal(expected);
     });
 
-    it('takes string down to 140 characters buffer is provided', function() {
-      var text = '12345678901234567890123456789012345678901234567890' + // 50 characters
-             '12345678901234567890123456789012345678901234567890' + // 50 characters
-             '12345678901234567890123456789012345678901234567890' + // 50 characters
-             '123456789012345678901234567890'; // 30 characters
+    it('takes string down to 140 chars buffer is provided', function() {
+      var text = '12345678901234567890123456789012345678901234567890' + // 50 chars
+             '12345678901234567890123456789012345678901234567890' + // 50 chars
+             '12345678901234567890123456789012345678901234567890' + // 50 chars
+             '123456789012345678901234567890'; // 30 chars
       text.length.should.equal(180);
-      var expected = '12345678901234567890123456789012345678901234567890' + // 50 characters
-                 '12345678901234567890123456789012345678901234567890' + // 50 characters
-                 '1234567890123456789012345678901234567...'; // 40 characters
+      var expected = '12345678901234567890123456789012345678901234567890' + // 50 chars
+                 '12345678901234567890123456789012345678901234567890' + // 50 chars
+                 '1234567890123456789012345678901234567...'; // 40 chars
       var actual = twilio.truncateForSMS(text, 20);
       actual.should.equal(expected);
     });

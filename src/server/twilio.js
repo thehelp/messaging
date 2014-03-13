@@ -4,7 +4,8 @@ This class makes it easy to send text messages with
 [Twilio's REST API](http://www.twilio.com/docs/api/rest). Two environment variables
 are required:
 
-1. TWILIO_KEY - your "Account SID" on your [Account Detail](https://www.twilio.com/user/account) page.
+1. TWILIO_KEY - your "Account SID" on your
+[Account Detail](https://www.twilio.com/user/account) page.
 2. TWILIO_TOKEN - your "Auth Token" on that same page.
 */
 
@@ -64,7 +65,8 @@ Twilio.prototype.send = function(options, cb) {
 
   var truncated = this.truncateForSMS(options.body);
   if (truncated !== options.body) {
-    this.winston.warn('Twilio.send - message was truncated before sending. Original: ' + options.body);
+    this.winston.warn('Twilio.send - message was truncated before sending. Original: ' +
+      options.body);
   }
 
   superagent
@@ -90,8 +92,8 @@ Twilio.prototype.send = function(options, cb) {
 // --------
 
 // `escapeCharacterCount` finds the number of characters that require escaping
-// io text messages, as listed in
-// [this blog post](http://www.twilio.com/engineering/2012/11/08/adventures-in-unicode-sms).
+// io text messages, as listed in this
+// [blog post](http://www.twilio.com/engineering/2012/11/08/adventures-in-unicode-sms).
 Twilio.prototype.escapeCharacterCount = function(text) {
   var result = 0;
   var escapes = /[\|\^{}€\[~\]\\]/g;
@@ -108,12 +110,12 @@ Twilio.prototype.escapeCharacterCount = function(text) {
 text message infrastructure into a different encoding, reducing the number of
 available characters to 70.
 
-We do a simple check, looking for just the first block of characters from from
-[Part 1: Latin alphabet No. 1 (ISO/IEC 8859-1)](http://en.wikipedia.org/wiki/ISO/IEC_8859-1). It's an imperfect stand-in
-for the characters actually supported
-in the [GSM 7-bit encoding system](http://en.wikipedia.org/wiki/GSM_03.38#GSM_7_bit_default_alphabet_and_extension_table_of_3GPP_TS_23.038_.2F_GSM_03.38),
-so if texting ever gets very important to an app, and it's sending input from users,
-we'll need to get a lot better at this.
+We do a simple check, looking for just the first block of characters from
+[Part 1: Latin alphabet #1 (ISO/IEC 8859-1)](http://en.wikipedia.org/wiki/ISO/IEC_8859-1).
+It's an imperfect stand-in for the characters actually supported
+in the [GSM 7-bit encoding system](http://bit.ly/1lCFVcJ), so if texting ever gets very
+important to an app, and it's sending input from users, we'll need to get a lot better at
+this.
 */
 Twilio.prototype.containsUnicode = function(text) {
   return (/[^\u0000-\u007E]/).test(text);

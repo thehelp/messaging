@@ -5,8 +5,8 @@ via [Sendgrid's SMTP API](http://sendgrid.com/docs/API_Reference/SMTP_API/index.
 environment variables are required
 
 1. SENDGRID_USERNAME - this is your raw Sendgrid account username
-2. SENDGRID_PASSWORD - unfortunately, this is the same password as your account. Not an account
-API access token. :0(
+2. SENDGRID_PASSWORD - unfortunately, this is the same password as your account. Not an
+account API access token. :0(
 */
 
 'use strict';
@@ -50,7 +50,9 @@ SendGrid.prototype.send = function(email, cb) {
   if (general.checkPrecondition(email.body, 'sendgrid/send: need email.body!', cb)) {
     return;
   }
-  if (general.checkPrecondition(email.subject, 'sendgrid/send: need email.subject!', cb)) {
+  if (general.checkPrecondition(email.subject, 'sendgrid/send: need email.subject!',
+    cb)) {
+
     return;
   }
 
