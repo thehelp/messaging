@@ -7,19 +7,19 @@
   "dependencies": {
     "async": "0.2.x",
     "lodash": "2.x",
-    "nodemailer": "0.5.15",
-    "superagent": "0.15.x",
+    "nodemailer": "0.6.1",
+    "superagent": "0.17.0",
     "winston": "0.7.x"
   },
   "peerDependencies": {
     "thehelp-core": "1.x"
   },
   "devDependencies": {
-    "blanket": "https://github.com/NiKnight/blanket/tarball/changes",
-    "grunt": "0.4.x",
-    "thehelp-core": "git+ssh://git@infra:thehelp-core#v1.2.0",
-    "thehelp-project": "git+ssh://git@infra:thehelp-project#v2.1.0",
-    "thehelp-test": "git+ssh://git@infra:thehelp-test#v2.0.0"
+    "blanket": "git+ssh://git@github.com:scottnonnenberg/blanket#v1.1.6",
+    "grunt": "0.4.4",
+    "thehelp-core": "git+ssh://git@infra:thehelp-core#v1.2.2",
+    "thehelp-project": "git+ssh://git@infra:thehelp-project#v2.4.0",
+    "thehelp-test": "git+ssh://git@infra:thehelp-test#v2.0.2"
   },
 
   "scripts": {
