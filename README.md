@@ -69,6 +69,12 @@ You'll need some additional environment variables to run all tests:
 
 ## History
 
+### 0.1.3 (2014-03-25)
+
+* Minor version updates: `async`, `superagent`
+* Patch updates: `nodemailer`
+* Updated a few dev dependencies
+
 ### 0.1.2 (2014-03-13)
 
 * Patch updates: grunt, thehelp-core, thehelp-test
