@@ -16,10 +16,10 @@
   },
   "devDependencies": {
     "blanket": "git+ssh://git@github.com:scottnonnenberg/blanket#v1.1.6",
-    "grunt": "0.4.4",
-    "thehelp-core": "git+ssh://git@infra:thehelp-core#v1.2.2",
-    "thehelp-project": "git+ssh://git@infra:thehelp-project#v2.4.0",
-    "thehelp-test": "git+ssh://git@infra:thehelp-test#v2.0.2"
+    "grunt": "0.4.5",
+    "thehelp-core": "1.5.2",
+    "thehelp-project": "2.5.0",
+    "thehelp-test": "2.0.8"
   },
 
   "scripts": {
