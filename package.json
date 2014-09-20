@@ -10,15 +10,11 @@
     "superagent": "0.18.x",
     "winston": "0.7.x"
   },
-  "peerDependencies": {
-    "thehelp-core": "1.x"
-  },
   "devDependencies": {
-    "blanket": "git+ssh://git@github.com:scottnonnenberg/blanket#v1.1.6",
+    "blanket": "1.1.6",
     "grunt": "0.4.5",
-    "thehelp-core": "1.5.2",
-    "thehelp-project": "2.5.0",
-    "thehelp-test": "2.0.8"
+    "thehelp-project": "3.3.1",
+    "thehelp-test": "3.1.0"
   },
 
   "scripts": {

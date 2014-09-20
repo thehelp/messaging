@@ -11,11 +11,7 @@ account API access token. :0(
 
 'use strict';
 
-var winston = require('winston');
 var nodemailer = require('nodemailer');
-
-var core = require('thehelp-core');
-var general = core.general;
 
 function SendGrid(options) {
   options = options || {};
@@ -41,19 +37,17 @@ function SendGrid(options) {
 SendGrid.prototype.send = function(email, cb) {
   email = email || {};
 
-  if (general.checkPrecondition(email.to, 'sendgrid/send: need email.to!', cb)) {
-    return;
+  if (!email.to) {
+    return cb(new Error('sendgrid/send: need email.to!'));
   }
-  if (general.checkPrecondition(email.from, 'sendgrid/send: need email.from!', cb)) {
-    return;
+  if (!email.from) {
+    return cb(new Error('sendgrid/send: need email.from!'));
   }
-  if (general.checkPrecondition(email.body, 'sendgrid/send: need email.body!', cb)) {
-    return;
+  if (!email.body) {
+    return cb(new Error('sendgrid/send: need email.body!'));
   }
-  if (general.checkPrecondition(email.subject, 'sendgrid/send: need email.subject!',
-    cb)) {
-
-    return;
+  if (!email.subject) {
+    return cb(new Error('sendgrid/send: need email.subject!'));
   }
 
   email.text = email.body;
@@ -64,11 +58,9 @@ SendGrid.prototype.send = function(email, cb) {
   transport.sendMail(email, function(err, response) {
     transport.close();
 
-    if (general.checkError('Sendgrid/send/sendMail', err, cb)) {
-      return;
+    if (err) {
+      return cb(err);
     }
-
-    winston.verbose('sendgrid/send successful: ' + response.message);
 
     return cb(null, response);
   });

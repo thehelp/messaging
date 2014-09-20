@@ -2,7 +2,7 @@
 'use strict';
 
 var test = require('thehelp-test');
-var core = test.core;
+var expect = test.expect;
 
 var Twilio = require('../../../src/server/twilio');
 
@@ -14,11 +14,10 @@ describe('Twilio', function() {
   });
 
   it('needed environment variables are in place', function() {
-    core.showLogs = false;
-    core.processVar('process.env.TWILIO_KEY', process.env.TWILIO_KEY);
-    core.processVar('process.env.TWILIO_TOKEN', process.env.TWILIO_TOKEN);
-    core.processVar('process.env.NOTIFY_SMS_FROM', process.env.NOTIFY_SMS_FROM);
-    core.processVar('process.env.NOTIFY_SMS_TO', process.env.NOTIFY_SMS_TO);
+    expect(process.env).to.have.property('TWILIO_KEY').that.exist;
+    expect(process.env).to.have.property('TWILIO_TOKEN').that.exist;
+    expect(process.env).to.have.property('NOTIFY_SMS_FROM').that.exist;
+    expect(process.env).to.have.property('NOTIFY_SMS_TO').that.exist;
   });
 
   it('sends a text message', function(done) {
@@ -31,7 +30,9 @@ describe('Twilio', function() {
     };
 
     twilio.send(text, function(err) {
-      core.processError('send', err);
+      if (err) {
+        throw err;
+      }
 
       return done();
     });

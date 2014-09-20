@@ -13,10 +13,6 @@ are required:
 
 var winston = require('winston');
 var superagent = require('superagent');
-var core = require('thehelp-core');
-
-var general = core.general;
-var string = core.string;
 
 function Twilio(options) {
   /*jshint maxcomplexity: 9 */
@@ -33,7 +29,6 @@ function Twilio(options) {
     throw new Error('need to set environment variable (TWILIO_TOKEN)');
   }
 
-  this.general = options.general || general;
   this.winston = options.winston || winston;
   this.superagent = options.superagent || superagent;
 }
@@ -50,17 +45,17 @@ if it isn't found.
 _NOTE: It will truncate any message you send if necessary, warning in the log when
 that becomes necessary._
 */
-Twilio.prototype.send = function(options, cb) {
+Twilio.prototype.send = function send(options, cb) {
   options = options || {};
 
-  if (general.checkPrecondition(options.to, 'twilio/send: need options.to!', cb)) {
-    return;
+  if (!options.to) {
+    return cb(new Error('twilio/send: need options.to!'));
   }
-  if (general.checkPrecondition(options.from, 'twilio/send: need options.from!', cb)) {
-    return;
+  if (!options.from) {
+    return cb(new Error('twilio/send: need options.from!'));
   }
-  if (general.checkPrecondition(options.body, 'twilio/send: need options.body!', cb)) {
-    return;
+  if (!options.body) {
+    return cb(new Error('twilio/send: need options.body!'));
   }
 
   var truncated = this.truncateForSMS(options.body);
@@ -94,7 +89,7 @@ Twilio.prototype.send = function(options, cb) {
 // `escapeCharacterCount` finds the number of characters that require escaping
 // io text messages, as listed in this
 // [blog post](http://www.twilio.com/engineering/2012/11/08/adventures-in-unicode-sms).
-Twilio.prototype.escapeCharacterCount = function(text) {
+Twilio.prototype.escapeCharacterCount = function escapeCharacterCount(text) {
   var result = 0;
   var escapes = /[\|\^{}€\[~\]\\]/g;
   var match = text.match(escapes);
@@ -117,7 +112,7 @@ in the [GSM 7-bit encoding system](http://bit.ly/1lCFVcJ), so if texting ever ge
 important to an app, and it's sending input from users, we'll need to get a lot better at
 this.
 */
-Twilio.prototype.containsUnicode = function(text) {
+Twilio.prototype.containsUnicode = function containsUnicode(text) {
   return (/[^\u0000-\u007E]/).test(text);
 };
 
@@ -132,7 +127,7 @@ SMS doesn't get truncated:
 4. We subract the number of characters requiring escaping from the `max`.
 5. Finally, we return the truncated string.
 */
-Twilio.prototype.truncateForSMS = function(text, buffer) {
+Twilio.prototype.truncateForSMS = function truncateForSMS(text, buffer) {
   var max = 160;
 
   if (this.containsUnicode(text)) {
@@ -145,7 +140,20 @@ Twilio.prototype.truncateForSMS = function(text, buffer) {
 
   max -= this.escapeCharacterCount(text);
 
-  return string.truncate(max, text);
+  return this.truncate(max, text);
+};
+
+// `truncate` returns a string with `limit` characters or less. If the original string
+// was longer than `limit` characters, it will be truncated to fit. Any truncated
+// string will end with an ellipsis ("...") to signify that it's missing info.
+Twilio.prototype.truncate = function truncate(limit, text) {
+  var result;
+  if (text.length > limit) {
+    result = text.substring(0, limit - 3);
+    result += '...';
+    return result;
+  }
+  return text;
 };
 
 module.exports = Twilio;

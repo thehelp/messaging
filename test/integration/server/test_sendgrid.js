@@ -2,7 +2,7 @@
 'use strict';
 
 var test = require('thehelp-test');
-var core = test.core;
+var expect = test.expect;
 
 var Sendgrid = require('../../../src/server/sendgrid');
 
@@ -14,10 +14,10 @@ describe('Sendgrid', function() {
   });
 
   it('needed environment variables are in place', function() {
-    core.processVar('process.env.SENDGRID_USERNAME', process.env.SENDGRID_USERNAME);
-    core.processVar('process.env.SENDGRID_PASSWORD', process.env.SENDGRID_PASSWORD);
-    core.processVar('process.env.NOTIFY_EMAIL_TO', process.env.NOTIFY_EMAIL_TO);
-    core.processVar('process.env.NOTIFY_EMAIL_FROM', process.env.NOTIFY_EMAIL_FROM);
+    expect(process.env).to.have.property('SENDGRID_USERNAME').that.exist;
+    expect(process.env).to.have.property('SENDGRID_PASSWORD').that.exist;
+    expect(process.env).to.have.property('NOTIFY_EMAIL_TO').that.exist;
+    expect(process.env).to.have.property('NOTIFY_EMAIL_FROM').that.exist;
   });
 
   it('sends mail', function(done) {
@@ -29,8 +29,12 @@ describe('Sendgrid', function() {
     };
 
     sendgrid.send(email, function(err, response) {
-      core.processError('send', err);
-      core.processVar('response', response);
+      if (err) {
+        throw err;
+      }
+
+      expect(response).to.exist;
+
       return done();
     });
   });
