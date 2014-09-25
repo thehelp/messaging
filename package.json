@@ -6,9 +6,7 @@
   "dependencies": {
     "async": "0.9.x",
     "lodash": "2.x",
-    "nodemailer": "0.6.5",
-    "superagent": "0.18.x",
-    "winston": "0.7.x"
+    "superagent": "0.18.x"
   },
   "devDependencies": {
     "blanket": "1.1.6",

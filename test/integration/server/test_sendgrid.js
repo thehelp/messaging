@@ -22,10 +22,11 @@ describe('Sendgrid', function() {
 
   it('sends mail', function(done) {
     var email = {
-      from: 'Sendgrid Integration Test <' + process.env.NOTIFY_EMAIL_FROM + '>',
+      from: process.env.NOTIFY_EMAIL_FROM,
+      fromname: 'Sendgrid Integration Test',
       to: process.env.NOTIFY_EMAIL_TO,
       subject: 'thehelp sendgrid integration test!',
-      body: 'Because you definitely need another email...'
+      text: 'Because you definitely need another email...'
     };
 
     sendgrid.send(email, function(err, response) {

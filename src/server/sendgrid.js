@@ -1,18 +1,22 @@
 /*
 # Sendgrid
-This class is a thin wrappper around the `nodemailer` node module, sending email
-via [Sendgrid's SMTP API](http://sendgrid.com/docs/API_Reference/SMTP_API/index.html). Two
-environment variables are required
-
-1. SENDGRID_USERNAME - this is your raw Sendgrid account username
-2. SENDGRID_PASSWORD - unfortunately, this is the same password as your account. Not an
-account API access token. :0(
+This class is a thin wrappper around the Sendgrid Send mail REST endpoint:
+<https://sendgrid.com/docs/API_Reference/Web_API/mail.html>.
 */
 
 'use strict';
 
-var nodemailer = require('nodemailer');
+var superagent = require('superagent');
 
+/*
+Two environment varialbes are required to create a `Sendgrid` instance:
+
+1. `username`/`SENDGRID_USERNAME` - this is your raw Sendgrid account username
+2. `password`/`SENDGRID_PASSWORD` - unfortunately, this is the same password as your
+account. Not an account API access token. I heartily recommend that you
+create additional sub-accounts to use for your programs:
+<https://sendgrid.com/docs/User_Guide/multiple_credentials.html>.
+*/
 function SendGrid(options) {
   options = options || {};
 
@@ -25,16 +29,21 @@ function SendGrid(options) {
   if (!this.password) {
     throw new Error('need to provide sendgrid password or set environment variable');
   }
+
+  this.superagent = options.superagent || superagent;
 }
 
 // Commonly-Used Methods
 // --------
 
 // `send` checks that all four required keys are included on the provided
-// `email` object: `to`, `from`, `body`, and `subject`. Then we create a `nodemailer`
-// transport, send with it, and immediately close the transport (this class isn't
-// designed for high-volume sending).
+// `email` object: `to`, `from`, `text`, and `subject`. More documentation on the endpoint
+// we hit: <https://sendgrid.com/docs/API_Reference/Web_API/mail.html>. We pass your
+// payload directly to it, after adding your sendgrid credentials.
 SendGrid.prototype.send = function(email, cb) {
+  /*jshint maxcomplexity: 8 */
+  /*jshint camelcase: false */
+
   email = email || {};
 
   if (!email.to) {
@@ -43,41 +52,34 @@ SendGrid.prototype.send = function(email, cb) {
   if (!email.from) {
     return cb(new Error('sendgrid/send: need email.from!'));
   }
-  if (!email.body) {
-    return cb(new Error('sendgrid/send: need email.body!'));
+  if (!email.text) {
+    return cb(new Error('sendgrid/send: need email.text!'));
   }
   if (!email.subject) {
     return cb(new Error('sendgrid/send: need email.subject!'));
   }
 
-  email.text = email.body;
-  delete email.body;
+  email.api_user = email.api_user || this.username;
+  email.api_key = email.api_key || this.password;
 
-  var transport = this.createTransport();
+  this.superagent
+    .post('https://api.sendgrid.com/api/mail.send.json')
+    .type('form')
+    .send(email)
+    .end(function(res) {
+      if (res.status !== 200) {
+        var body = res.body || {};
+        var message = body.message;
 
-  transport.sendMail(email, function(err, response) {
-    transport.close();
+        if (body.errors && body.errors.length) {
+          message = body.errors[0];
+        }
 
-    if (err) {
-      return cb(err);
-    }
+        return cb(new Error(message || 'Something went wrong'));
+      }
 
-    return cb(null, response);
-  });
-};
-
-// Utility Methods
-// --------
-
-// `createTransport` supplies `nodemailer` what it needs to get ready to send.
-SendGrid.prototype.createTransport = function() {
-  return nodemailer.createTransport('SMTP', {
-    service: 'SendGrid',
-    auth: {
-      user: this.username,
-      pass: this.password
-    }
-  });
+      return cb(null, res.body);
+    });
 };
 
 module.exports = SendGrid;

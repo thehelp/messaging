@@ -12,8 +12,7 @@ describe('Twilio', function() {
   beforeEach(function() {
     twilio = new Twilio({
       key: 'something',
-      token: 'another thing',
-      winston: new test.WinstonTestHelper({showLogs: false})
+      token: 'another thing'
     });
   });
 

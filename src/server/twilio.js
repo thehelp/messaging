@@ -11,7 +11,6 @@ are required:
 
 'use strict';
 
-var winston = require('winston');
 var superagent = require('superagent');
 
 function Twilio(options) {
@@ -29,7 +28,6 @@ function Twilio(options) {
     throw new Error('need to set environment variable (TWILIO_TOKEN)');
   }
 
-  this.winston = options.winston || winston;
   this.superagent = options.superagent || superagent;
 }
 
@@ -58,20 +56,14 @@ Twilio.prototype.send = function send(options, cb) {
     return cb(new Error('twilio/send: need options.body!'));
   }
 
-  var truncated = this.truncateForSMS(options.body);
-  if (truncated !== options.body) {
-    this.winston.warn('Twilio.send - message was truncated before sending. Original: ' +
-      options.body);
-  }
-
-  superagent
+  this.superagent
     .post('https://api.twilio.com/2010-04-01/Accounts/' + this.key + '/SMS/Messages.json')
     .auth(this.key, this.token)
     .type('form')
     .send({
       To: options.to,
       From: options.from,
-      Body: truncated
+      Body: options.body
     })
     .end(function(res) {
       //I've seen only 201 for success. But we allow for 202 as well.
