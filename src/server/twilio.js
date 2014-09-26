@@ -92,6 +92,41 @@ Twilio.prototype._sendFinish = function _sendFinish(res, cb) {
 // SMS processing
 // --------
 
+/*
+`truncateForSMS` goes through the full set of steps required to capture the maximumn
+length for an SMS, so it doesn't get truncated on send:
+
+1. The `max` starts at 160
+2. If the string contains unicode, that `max` goes down to 70
+3. If there's some additional text that still needs to be added to the message, of length
+`buffer`, we subtract that from the `max`.
+4. We subract the number of characters requiring escaping from the `max`.
+*/
+Twilio.prototype.getMaxLength = function getMaxLength(text, buffer) {
+  var max = 160;
+
+  if (this.containsUnicode(text)) {
+    max = 70;
+  }
+
+  if (buffer) {
+    max -= buffer;
+  }
+
+  max -= this.escapeCharacterCount(text);
+
+  return max;
+};
+
+/*
+`truncateForSMS` calculates the max length for the provided `text`, and then does the
+truncation for you. If a truncation is required, the last three characters will be '...'.
+*/
+Twilio.prototype.truncateForSMS = function truncateForSMS(text, buffer) {
+  var max = this.getMaxLength(text, buffer);
+  return this._truncate(max, text);
+};
+
 // `escapeCharacterCount` finds the number of characters that require escaping
 // io text messages, as listed in this
 // [blog post](http://www.twilio.com/engineering/2012/11/08/adventures-in-unicode-sms).
@@ -122,37 +157,10 @@ Twilio.prototype.containsUnicode = function containsUnicode(text) {
   return (/[^\u0000-\u007E]/).test(text);
 };
 
-/*
-`truncateForSMS` goes through the full set of steps required to ensure that a given
-SMS doesn't get truncated:
-
-1. The `max` starts at 160
-2. If the string contains unicode, that `max` goes down to 70
-3. If there's some additional text that still needs to be added to the message, of length
-`buffer`, we subtract that from the `max`.
-4. We subract the number of characters requiring escaping from the `max`.
-5. Finally, we return the truncated string.
-*/
-Twilio.prototype.truncateForSMS = function truncateForSMS(text, buffer) {
-  var max = 160;
-
-  if (this.containsUnicode(text)) {
-    max = 70;
-  }
-
-  if (buffer) {
-    max -= buffer;
-  }
-
-  max -= this.escapeCharacterCount(text);
-
-  return this.truncate(max, text);
-};
-
 // `truncate` returns a string with `limit` characters or less. If the original string
 // was longer than `limit` characters, it will be truncated to fit. Any truncated
 // string will end with an ellipsis ("...") to signify that it's missing info.
-Twilio.prototype.truncate = function truncate(limit, text) {
+Twilio.prototype._truncate = function _truncate(limit, text) {
   var result;
   if (text.length > limit) {
     result = text.substring(0, limit - 3);
