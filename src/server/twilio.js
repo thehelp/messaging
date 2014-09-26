@@ -20,12 +20,12 @@ function Twilio(options) {
 
   this.key = options.key || process.env.THEHELP_TWILIO_KEY;
   if (!this.key) {
-    throw new Error('need to set environment variable (TWILIO_KEY)');
+    throw new Error('need to provide twilio key by options or env var!');
   }
 
   this.token = options.token || process.env.THEHELP_TWILIO_TOKEN;
   if (!this.token) {
-    throw new Error('need to set environment variable (TWILIO_TOKEN)');
+    throw new Error('need to provide twilio token by options or env var!');
   }
 
   this.twilio = options.twilio;
@@ -39,7 +39,7 @@ function Twilio(options) {
   this.superagent = options.superagent || superagent;
 }
 
-// Commonly-Used Methods
+// Sending SMS
 // --------
 
 /*
@@ -71,15 +71,20 @@ Twilio.prototype.send = function send(options, cb) {
     .type('form')
     .send(options)
     .end(function(res) {
-      _this._sendFinish(res, cb);
+      _this._sendFinish(options, res, cb);
     });
 };
 
 // `_sendFinish` handles the payload returned to us from the call to Twilio.
-Twilio.prototype._sendFinish = function _sendFinish(res, cb) {
+Twilio.prototype._sendFinish = function _sendFinish(options, res, cb) {
   //I've seen only 201 for success. But we allow for 202 as well.
   if (res.status > 202) {
-    return cb(new Error(res.body.message || 'Something went wrong!'));
+    var body = res.body || {};
+
+    var err = new Error(body.message || 'Something went wrong!')
+    err.options = options;
+
+    return cb(err);
   }
 
   return cb(null, res.body);

@@ -3,38 +3,157 @@
 
 var test = require('thehelp-test');
 var expect = test.expect;
+var sinon = test.sinon;
 
 var Twilio = require('../../../src/server/twilio');
 
 describe('Twilio', function() {
-  var twilio;
+  var twilio, key, token;
 
   beforeEach(function() {
+    var key, token;
+
+    key = process.env.THEHELP_TWILIO_KEY;
+    token = process.env.THEHELP_TWILIO_TOKEN;
+
     twilio = new Twilio({
       key: 'something',
       token: 'another thing'
     });
   });
 
-  describe('#escapeCharacterCount', function() {
-    it('return zero for normal charaters', function() {
-      expect(twilio.escapeCharacterCount('abcde')).to.equal(0);
+  afterEach(function() {
+    process.env.THEHELP_TWILIO_KEY = key;
+    process.env.THEHELP_TWILIO_TOKEN = token;
+  });
+
+  describe('constructor', function() {
+    it('throws if THEHELP_TWILIO_KEY is not defined', function() {
+      delete process.env.THEHELP_TWILIO_KEY;
+
+      expect(function() {
+        new Twilio();
+      }).to['throw']().that.match(/twilio key/);
     });
 
-    it('handles all characters requiring an escape character', function() {
-      expect(twilio.escapeCharacterCount('|^{}€[~]\\')).to.equal(9);
+    it('does not throw if key param is provided', function() {
+      delete process.env.THEHELP_TWILIO_KEY;
+
+      expect(function() {
+        new Twilio({
+          key: 'something'
+        });
+      }).not.to['throw']();
+    });
+
+    it('throws if THEHELP_TWILIO_TOKEN is not defined', function() {
+      delete process.env.THEHELP_TWILIO_TOKEN;
+
+      expect(function() {
+        new Twilio();
+      }).to['throw']().that.match(/twilio token/);
+    });
+
+    it('does not throw if token param is provided', function() {
+      delete process.env.THEHELP_TWILIO_TOKEN;
+
+      expect(function() {
+        new Twilio({
+          token: 'something'
+        });
+      }).not.to['throw']();
     });
   });
 
-  describe('#containsUnicode', function() {
-    it('returns false for ASCII', function() {
-      expect(twilio.containsUnicode('abcde')).to.equal(false);
+  // Sending SMS
+
+  describe('#send', function() {
+    it('returns error if To is not provided', function(done) {
+      var email = {
+        From: 'from',
+        Body: 'body'
+      };
+
+      twilio.send(email, function(err) {
+        expect(err).to.have.property('message').that.match(/options.To/);
+        done();
+      });
     });
 
-    it('returns true for non-ASCII', function() {
-      expect(twilio.containsUnicode('©')).to.equal(true);
+    it('returns error if From is not provided', function(done) {
+      var email = {
+        To: 'to',
+        Body: 'body'
+      };
+
+      twilio.send(email, function(err) {
+        expect(err).to.have.property('message').that.match(/options.From/);
+        done();
+      });
+    });
+
+    it('returns error if Body is not provided', function(done) {
+      var email = {
+        To: 'to',
+        From: 'from'
+      };
+
+      twilio.send(email, function(err) {
+        expect(err).to.have.property('message').that.match(/options.Body/);
+        done();
+      });
     });
   });
+
+  describe('#_sendFinish', function() {
+    it('returns error if res.status is 400', function(done) {
+      var response = 'error from twilio';
+      var res = {
+        status: 400,
+        body: {
+          message: response
+        }
+      };
+      var options = {
+        To: 'blah',
+        From: 'blah',
+        Body: 'something'
+      };
+
+      twilio._sendFinish(options, res, function(err) {
+        expect(err).to.have.property('message').that.equal(response);
+        expect(err).to.have.property('options').that.deep.equal(options);
+
+        done();
+      });
+    });
+
+    it('handles a null body', function(done) {
+      var response = 'error from twilio';
+      var res = {
+        status: 400
+      };
+
+      twilio._sendFinish(null, res, function(err) {
+        expect(err).to.have.property('message').that.equal('Something went wrong!');
+        done();
+      });
+    });
+
+    it('handles a null body', function(done) {
+      var response = 'error from twilio';
+      var res = {
+        status: 400
+      };
+
+      twilio._sendFinish(null, res, function(err) {
+        expect(err).to.have.property('message').that.equal('Something went wrong!');
+        done();
+      });
+    });
+  });
+
+  // SMS Processing
 
   describe('#truncate', function() {
     it('takes string down to 70 characters if it has unicode', function() {
@@ -73,6 +192,99 @@ describe('Twilio', function() {
                  '1234567890123456789012345678901234567...'; // 40 chars
       var actual = twilio.truncate(text, 20);
       expect(actual).to.equal(expected);
+    });
+  });
+
+  describe('#escapeCharacterCount', function() {
+    it('return zero for normal charaters', function() {
+      expect(twilio.escapeCharacterCount('abcde')).to.equal(0);
+    });
+
+    it('handles all characters requiring an escape character', function() {
+      expect(twilio.escapeCharacterCount('|^{}€[~]\\')).to.equal(9);
+    });
+  });
+
+  describe('#containsUnicode', function() {
+    it('returns false for ASCII', function() {
+      expect(twilio.containsUnicode('abcde')).to.equal(false);
+    });
+
+    it('returns true for non-ASCII', function() {
+      expect(twilio.containsUnicode('©')).to.equal(true);
+    });
+  });
+
+  describe('#_truncate', function() {
+    it('handles strings right at the limit', function() {
+      expect(twilio._truncate(5, 'abcde')).to.equal('abcde');
+    });
+
+    it('handles strings smaller than the limit', function() {
+      expect(twilio._truncate(5, 'abcd')).to.equal('abcd');
+    });
+
+    it('strings over the limit', function() {
+      expect(twilio._truncate(5, 'abcdefgh')).to.equal('ab...');
+    });
+
+    it('strings just a little over the limit', function() {
+      expect(twilio._truncate(5, 'abcdef')).to.equal('ab...');
+    });
+  });
+
+  // Express middleware
+
+  describe('#validate', function() {
+    it('returns an error if this.twilio is not set', function(done) {
+      delete twilio.twilio;
+
+      twilio.validate({}, null, function(err) {
+        expect(err).to.have.property('message').that.match(/options.twilio/);
+        done();
+      })
+    });
+
+    it('returns error if twilio.validateExpressRequest returns false', function(done) {
+      twilio.twilio = {
+        validateExpressRequest: sinon.stub().returns(false)
+      };
+      var req = {
+        body: {
+          From: 'from',
+          To: 'to'
+        }
+      };
+
+      twilio.validate(req, null, function(err) {
+
+        expect(twilio).to.have
+          .deep.property('twilio.validateExpressRequest.callCount', 1);
+
+        expect(err).to.have.property('message').that.match(/not pass twilio validation/);
+        expect(err).to.have.property('body').that.deep.equal(req.body);
+        expect(err).to.have.property('status', 400);
+        expect(err).to.have.property('text').that.match(/twilio, are you?/);
+
+        done();
+      })
+    });
+
+    it('does not call validateExpressRequest if development set to true', function(done) {
+      twilio.twilio = {
+        validateExpressRequest: sinon.stub().returns(false)
+      };
+      twilio.development = true;
+
+      twilio.validate({}, null, function(err) {
+
+        expect(twilio).to.have
+          .deep.property('twilio.validateExpressRequest.callCount', 0);
+
+        expect(err).not.to.exist;
+
+        done();
+      })
     });
   });
 
