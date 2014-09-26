@@ -36,7 +36,7 @@ describe('Twilio', function() {
     });
   });
 
-  describe('#truncateForSMS', function() {
+  describe('#truncate', function() {
     it('takes string down to 70 characters if it has unicode', function() {
       var text = '©2345678901234567890123456789012345678901234567890' + // 50 chars
              '123456789012345678901'; // 21 chars
@@ -44,7 +44,7 @@ describe('Twilio', function() {
       var expected = '©2345678901234567890123456789012345678901234567890' + // 50 chars
                  '12345678901234567...'; // 20 chars
 
-      var actual = twilio.truncateForSMS(text);
+      var actual = twilio.truncate(text);
       expect(actual).to.equal(expected);
     });
 
@@ -58,7 +58,7 @@ describe('Twilio', function() {
                  '12345678901234567890123456789012345678901234567890' + // 50 chars
                  '12345678901234567890123456789012345678901234567890' + // 50 chars
                  '123456...'; // 9 chars
-      var actual = twilio.truncateForSMS(text);
+      var actual = twilio.truncate(text);
       expect(actual).to.equal(expected);
     });
 
@@ -71,7 +71,7 @@ describe('Twilio', function() {
       var expected = '12345678901234567890123456789012345678901234567890' + // 50 chars
                  '12345678901234567890123456789012345678901234567890' + // 50 chars
                  '1234567890123456789012345678901234567...'; // 40 chars
-      var actual = twilio.truncateForSMS(text, 20);
+      var actual = twilio.truncate(text, 20);
       expect(actual).to.equal(expected);
     });
   });

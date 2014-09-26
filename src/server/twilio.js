@@ -93,7 +93,7 @@ Twilio.prototype._sendFinish = function _sendFinish(res, cb) {
 // --------
 
 /*
-`truncateForSMS` goes through the full set of steps required to capture the maximumn
+`getMaxLength` goes through the full set of steps required to capture the maximumn
 length for an SMS, so it doesn't get truncated on send:
 
 1. The `max` starts at 160
@@ -119,10 +119,10 @@ Twilio.prototype.getMaxLength = function getMaxLength(text, buffer) {
 };
 
 /*
-`truncateForSMS` calculates the max length for the provided `text`, and then does the
+`truncate` calculates the max length for the provided `text`, and then does the
 truncation for you. If a truncation is required, the last three characters will be '...'.
 */
-Twilio.prototype.truncateForSMS = function truncateForSMS(text, buffer) {
+Twilio.prototype.truncate = function truncate(text, buffer) {
   var max = this.getMaxLength(text, buffer);
   return this._truncate(max, text);
 };
