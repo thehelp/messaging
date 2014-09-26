@@ -18,8 +18,8 @@ describe('Twilio', function() {
     });
 
     // library variables
-    expect(process.env).to.have.property('TWILIO_KEY').that.exist;
-    expect(process.env).to.have.property('TWILIO_TOKEN').that.exist;
+    expect(process.env).to.have.property('THEHELP_TWILIO_KEY').that.exist;
+    expect(process.env).to.have.property('THEHELP_TWILIO_TOKEN').that.exist;
 
     // test-specific variables
     expect(process.env).to.have.property('TEST_SMS_FROM').that.exist;

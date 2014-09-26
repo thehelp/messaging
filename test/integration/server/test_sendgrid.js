@@ -17,8 +17,9 @@ describe('Sendgrid', function() {
     });
 
     // library variables
-    expect(process.env).to.have.property('SENDGRID_USERNAME').that.exist;
-    expect(process.env).to.have.property('SENDGRID_PASSWORD').that.exist;
+    expect(process.env).to.have.property('THEHELP_SENDGRID_USERNAME').that.exist;
+    expect(process.env).to.have.property('THEHELP_SENDGRID_PASSWORD').that.exist;
+    expect(process.env).to.have.property('THEHELP_SENDGRID_VERIFY').that.exist;
 
     // test-specific variables
     expect(process.env).to.have.property('TEST_EMAIL_FROM').that.exist;

@@ -22,17 +22,17 @@ function SendGrid(options) {
 
   options = options || {};
 
-  this.username = options.username || process.env.SENDGRID_USERNAME;
+  this.username = options.username || process.env.THEHELP_SENDGRID_USERNAME;
   if (!this.username) {
-    throw new Error('need to provide sendgrid username or set environment variable');
+    throw new Error('need to provide sendgrid username by options or env var');
   }
 
-  this.password = options.password || process.env.SENDGRID_PASSWORD;
+  this.password = options.password || process.env.THEHELP_SENDGRID_PASSWORD;
   if (!this.password) {
-    throw new Error('need to provide sendgrid password or set environment variable');
+    throw new Error('need to provide sendgrid password by options or env var');
   }
 
-  this.sendgridVerify = options.sendgridVerify || process.env.SENDGRID_VERIFY;
+  this.sendgridVerify = options.sendgridVerify || process.env.THEHELP_SENDGRID_VERIFY;
   this.Busboy = options.Busboy;
 
   this.parse = this.parse.bind(this);
@@ -168,7 +168,9 @@ SendGrid.prototype.validate = function(req, res, next) {
   var err;
 
   if (!this.sendgridVerify) {
-    err = new Error('Need to set options.sendgridVerify or SENDGRID_VERIFY env var');
+    err = new Error(
+      'Need to provide sendgrid verify value on construction or via env var'
+    );
     return next(err);
   }
 

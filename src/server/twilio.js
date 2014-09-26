@@ -18,12 +18,12 @@ function Twilio(options) {
 
   options = options || {};
 
-  this.key = options.key || process.env.TWILIO_KEY;
+  this.key = options.key || process.env.THEHELP_TWILIO_KEY;
   if (!this.key) {
     throw new Error('need to set environment variable (TWILIO_KEY)');
   }
 
-  this.token = options.token || process.env.TWILIO_TOKEN;
+  this.token = options.token || process.env.THEHELP_TWILIO_TOKEN;
   if (!this.token) {
     throw new Error('need to set environment variable (TWILIO_TOKEN)');
   }
