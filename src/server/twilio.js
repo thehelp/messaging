@@ -52,6 +52,7 @@ _NOTE: It will truncate any message you send if necessary, warning in the log wh
 that becomes necessary._
 */
 Twilio.prototype.send = function send(options, cb) {
+  var _this = this;
   options = options || {};
 
   if (!options.to) {
@@ -74,16 +75,21 @@ Twilio.prototype.send = function send(options, cb) {
       Body: options.body
     })
     .end(function(res) {
-      //I've seen only 201 for success. But we allow for 202 as well.
-      if (res.status > 202) {
-        return cb(new Error(res.body.message || 'Something went wrong!'));
-      }
-
-      return cb(null, res.body);
+      _this._sendFinish(res, cb);
     });
 };
 
-// Utility Methods
+// `_sendFinish` handles the payload returned to us from the call to Twilio.
+Twilio.prototype._sendFinish = function _sendFinish(res, cb) {
+  //I've seen only 201 for success. But we allow for 202 as well.
+  if (res.status > 202) {
+    return cb(new Error(res.body.message || 'Something went wrong!'));
+  }
+
+  return cb(null, res.body);
+};
+
+// SMS processing
 // --------
 
 // `escapeCharacterCount` finds the number of characters that require escaping
@@ -191,7 +197,7 @@ body of the request?
 a proxy, it's easiest to `app.enable('trust proxy');`
 
 */
-Twilio.prototype.validate = function(req, res, next) {
+Twilio.prototype.validate = function validate(req, res, next) {
   var err;
 
   if (!this.twilio) {

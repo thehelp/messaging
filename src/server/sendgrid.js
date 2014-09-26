@@ -48,9 +48,10 @@ function SendGrid(options) {
 // `email` object: `to`, `from`, `text`, and `subject`. More documentation on the endpoint
 // we hit: <https://sendgrid.com/docs/API_Reference/Web_API/mail.html>. We pass your
 // payload directly to it, after adding your sendgrid credentials.
-SendGrid.prototype.send = function(email, cb) {
+SendGrid.prototype.send = function send(email, cb) {
   /*jshint maxcomplexity: 8 */
   /*jshint camelcase: false */
+  var _this = this;
 
   email = email || {};
 
@@ -75,19 +76,24 @@ SendGrid.prototype.send = function(email, cb) {
     .type('form')
     .send(email)
     .end(function(res) {
-      if (res.status !== 200) {
-        var body = res.body || {};
-        var message = body.message;
-
-        if (body.errors && body.errors.length) {
-          message = body.errors[0];
-        }
-
-        return cb(new Error(message || 'Something went wrong'));
-      }
-
-      return cb(null, res.body);
+      _this._sendFinish(res, cb);
     });
+};
+
+// `_sendFinish` handles the payload returned to us from the call to Sendgrid.
+SendGrid.prototype._sendFinish = function _sendFinish(res, cb) {
+  if (res.status !== 200) {
+    var body = res.body || {};
+    var message = body.message;
+
+    if (body.errors && body.errors.length) {
+      message = body.errors[0];
+    }
+
+    return cb(new Error(message || 'Something went wrong'));
+  }
+
+  return cb(null, res.body);
 };
 
 // Express middleware
@@ -117,7 +123,7 @@ app.post('/sendgrid/email', sendgrid.parse, function(req, res) {
 _Note: You'll need to supply [`Busboy`](https://github.com/mscdex/busboy) to this class
 on construction if you want to use this middleware method._Note
 */
-SendGrid.prototype.parse = function(req, res, next) {
+SendGrid.prototype.parse = function parse(req, res, next) {
   var type = req.headers['content-type'] || '';
   req.body = req.body || {};
 
@@ -164,7 +170,7 @@ app.post('/sendgrid/email', sendgrid.validate, sendgrid.parse, function(req, res
 })
 ```
 */
-SendGrid.prototype.validate = function(req, res, next) {
+SendGrid.prototype.validate = function validate(req, res, next) {
   var err;
 
   if (!this.sendgridVerify) {
