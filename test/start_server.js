@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 var port = 3000;
-console.log('Starting test server, listening on port ' + port)
+console.log('Starting test server, listening on port ' + port);
 app.listen(port);
 
 module.exports = app;
