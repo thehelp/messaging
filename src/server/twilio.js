@@ -55,25 +55,21 @@ Twilio.prototype.send = function send(options, cb) {
   var _this = this;
   options = options || {};
 
-  if (!options.to) {
-    return cb(new Error('twilio/send: need options.to!'));
+  if (!options.To) {
+    return cb(new Error('twilio/send: need options.To! (capitalized)'));
   }
-  if (!options.from) {
-    return cb(new Error('twilio/send: need options.from!'));
+  if (!options.From) {
+    return cb(new Error('twilio/send: need options.From! (capitalized)'));
   }
-  if (!options.body) {
-    return cb(new Error('twilio/send: need options.body!'));
+  if (!options.Body) {
+    return cb(new Error('twilio/send: need options.Body! (capitalized)'));
   }
 
   this.superagent
     .post('https://api.twilio.com/2010-04-01/Accounts/' + this.key + '/SMS/Messages.json')
     .auth(this.key, this.token)
     .type('form')
-    .send({
-      To: options.to,
-      From: options.from,
-      Body: options.body
-    })
+    .send(options)
     .end(function(res) {
       _this._sendFinish(res, cb);
     });

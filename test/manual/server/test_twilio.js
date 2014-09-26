@@ -31,9 +31,9 @@ describe('Twilio', function() {
     this.timeout(5000);
 
     var sms = {
-      from: process.env.TEST_SMS_FROM,
-      to: process.env.TEST_SMS_MANUAL_RECEIVE,
-      body: 'thehelp twilio integration test!'
+      From: process.env.TEST_SMS_FROM,
+      To: process.env.TEST_SMS_MANUAL_RECEIVE,
+      Body: 'thehelp twilio integration test!'
     };
 
     twilio.send(sms, function(err) {
@@ -49,16 +49,16 @@ describe('Twilio', function() {
     this.timeout(10000);
 
     var sms = {
-      from: process.env.TEST_SMS_FROM,
-      to: process.env.TEST_SMS_RECEIVE,
-      body: 'thehelp twilio integration test!'
+      From: process.env.TEST_SMS_FROM,
+      To: process.env.TEST_SMS_RECEIVE,
+      Body: 'thehelp twilio integration test!'
     };
 
     app.post('/twilio/sms', twilio.validate, function(req, res) {
 
-      expect(req.body).to.have.property('From', sms.from);
-      expect(req.body).to.have.property('To', sms.to);
-      expect(req.body).to.have.property('Body', sms.body);
+      expect(req.body).to.have.property('From', sms.From);
+      expect(req.body).to.have.property('To', sms.To);
+      expect(req.body).to.have.property('Body', sms.Body);
 
       res.end();
       done();
