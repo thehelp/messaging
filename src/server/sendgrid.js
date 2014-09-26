@@ -32,7 +32,7 @@ function SendGrid(options) {
     throw new Error('need to provide sendgrid password by options or env var');
   }
 
-  this.sendgridVerify = options.sendgridVerify || process.env.THEHELP_SENDGRID_VERIFY;
+  this.verify = options.verify || process.env.THEHELP_SENDGRID_VERIFY;
   this.Busboy = options.Busboy;
 
   this.parse = this.parse.bind(this);
@@ -44,44 +44,53 @@ function SendGrid(options) {
 // Commonly-Used Methods
 // --------
 
-// `send` checks that all four required keys are included on the provided
-// `email` object: `to`, `from`, `text`, and `subject`. More documentation on the endpoint
-// we hit: <https://sendgrid.com/docs/API_Reference/Web_API/mail.html>. We pass your
-// payload directly to it, after adding your sendgrid credentials.
-SendGrid.prototype.send = function send(email, cb) {
+/*
+`send` checks that all four required keys are included on the provided
+`options` object:
+
++ `to`
++ `from`,
++ `text` or `html`
++ `subject`
+
+More documentation on the endpoint we hit:
+<https://sendgrid.com/docs/API_Reference/Web_API/mail.html>. We pass your
+payload directly to it, after adding your sendgrid credentials.
+*/
+SendGrid.prototype.send = function send(options, cb) {
   /*jshint maxcomplexity: 8 */
   /*jshint camelcase: false */
   var _this = this;
 
-  email = email || {};
+  options = options || {};
 
-  if (!email.to) {
-    return cb(new Error('sendgrid/send: need email.to!'));
+  if (!options.to) {
+    return cb(new Error('sendgrid/send: need options.to!'));
   }
-  if (!email.from) {
-    return cb(new Error('sendgrid/send: need email.from!'));
+  if (!options.from) {
+    return cb(new Error('sendgrid/send: need options.from!'));
   }
-  if (!email.text && !email.html) {
-    return cb(new Error('sendgrid/send: need either email.text or email.html!'));
+  if (!options.text && !options.html) {
+    return cb(new Error('sendgrid/send: need either options.text or options.html!'));
   }
-  if (!email.subject) {
-    return cb(new Error('sendgrid/send: need email.subject!'));
+  if (!options.subject) {
+    return cb(new Error('sendgrid/send: need options.subject!'));
   }
 
-  email.api_user = email.api_user || this.username;
-  email.api_key = email.api_key || this.password;
+  options.api_user = options.api_user || this.username;
+  options.api_key = options.api_key || this.password;
 
   this.superagent
     .post('https://api.sendgrid.com/api/mail.send.json')
     .type('form')
-    .send(email)
+    .send(options)
     .end(function(res) {
-      _this._sendFinish(res, cb);
+      _this._sendFinish(options, res, cb);
     });
 };
 
 // `_sendFinish` handles the payload returned to us from the call to Sendgrid.
-SendGrid.prototype._sendFinish = function _sendFinish(res, cb) {
+SendGrid.prototype._sendFinish = function _sendFinish(options, res, cb) {
   if (res.status !== 200) {
     var body = res.body || {};
     var message = body.message;
@@ -90,7 +99,10 @@ SendGrid.prototype._sendFinish = function _sendFinish(res, cb) {
       message = body.errors[0];
     }
 
-    return cb(new Error(message || 'Something went wrong'));
+    var err = new Error(message || 'Something went wrong!');
+    err.options = options;
+
+    return cb(err);
   }
 
   return cb(null, res.body);
@@ -103,17 +115,17 @@ SendGrid.prototype._sendFinish = function _sendFinish(res, cb) {
 To help you deal with requests coming from Sendgrid, described here:
 <https://sendgrid.com/docs/API_Reference/Webhooks/parse.html>
 
-_Note: Don't forget to disable CSRF checking for your incoming email endpoint!_
+_Note: Don't forget to disable CSRF checking for your incoming options endpoint!_
 */
 
 /*
-It's kind of a pain to parse incoming Sendgrid emails because their content type is
+It's kind of a pain to parse incoming Sendgrid optionss because their content type is
 'multipart/form-data'. This middleware function pulls all non-file data out of the
 Sendgrid request, and then makes that available at `req.body`.
 
 Use it like this:
 ```
-app.post('/sendgrid/email', sendgrid.parse, function(req, res) {
+app.post('/sendgrid/options', sendgrid.parse, function(req, res) {
   console.log(req.body)
   res.status(200);
   res.end();
@@ -128,12 +140,12 @@ SendGrid.prototype.parse = function parse(req, res, next) {
   req.body = req.body || {};
 
   if (!this.Busboy) {
-    var err = new Error('Need to set options.Busboy!');
+    var err = new Error('Need to set options.Busboy on construction!');
     return next(err);
   }
 
   if (type.indexOf('multipart') < 0) {
-    next();
+    return next();
   }
 
   var busboy = new this.Busboy({headers: req.headers});
@@ -163,7 +175,7 @@ directly passed to this class on construction.
 We just add one new middleware function:
 
 ```
-app.post('/sendgrid/email', sendgrid.validate, sendgrid.parse, function(req, res) {
+app.post('/sendgrid/options', sendgrid.validate, sendgrid.parse, function(req, res) {
   console.log(req.body)
   res.status(200);
   res.end();
@@ -173,14 +185,14 @@ app.post('/sendgrid/email', sendgrid.validate, sendgrid.parse, function(req, res
 SendGrid.prototype.validate = function validate(req, res, next) {
   var err;
 
-  if (!this.sendgridVerify) {
+  if (!this.verify) {
     err = new Error(
       'Need to provide sendgrid verify value on construction or via env var'
     );
     return next(err);
   }
 
-  if (req.query.verify !== this.sendgridVerify) {
+  if (req.query.verify !== this.verify) {
     err = new Error('Request did not pass sendgrid validation');
     err.body = req.body;
     err.query = req.query;
