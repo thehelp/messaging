@@ -49,7 +49,7 @@ describe('Sendgrid', function() {
   });
 
   it('receives an email', function(done) {
-    this.timeout(10000);
+    this.timeout(15000);
 
     var email = {
       from: process.env.TEST_EMAIL_FROM,
