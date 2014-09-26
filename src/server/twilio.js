@@ -202,7 +202,7 @@ Some trouble-shooting tips:
 [`urlencoded`](https://github.com/expressjs/body-parser#bodyparserurlencodedoptions)
 body of the request?
 + Disable CSRF checking for this endpoint
-+ The validation function gets the `host` and `protocol` from Express. If you're beind
++ The validation function gets the `host` and `protocol` from Express. If you're behind
 a proxy, it's easiest to `app.enable('trust proxy');`
 
 */
