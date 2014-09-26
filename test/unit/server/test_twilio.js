@@ -28,6 +28,8 @@ describe('Twilio', function() {
   });
 
   describe('constructor', function() {
+    /*jshint nonew: false */
+
     it('throws if THEHELP_TWILIO_KEY is not defined', function() {
       delete process.env.THEHELP_TWILIO_KEY;
 
@@ -129,7 +131,6 @@ describe('Twilio', function() {
     });
 
     it('handles a null body', function(done) {
-      var response = 'error from twilio';
       var res = {
         status: 400
       };
@@ -141,7 +142,6 @@ describe('Twilio', function() {
     });
 
     it('handles a null body', function(done) {
-      var response = 'error from twilio';
       var res = {
         status: 400
       };
@@ -242,7 +242,7 @@ describe('Twilio', function() {
       twilio.validate({}, null, function(err) {
         expect(err).to.have.property('message').that.match(/options.twilio/);
         done();
-      })
+      });
     });
 
     it('returns error if twilio.validateExpressRequest returns false', function(done) {
@@ -267,7 +267,7 @@ describe('Twilio', function() {
         expect(err).to.have.property('text').that.match(/twilio, are you?/);
 
         done();
-      })
+      });
     });
 
     it('does not call validateExpressRequest if development set to true', function(done) {
@@ -284,7 +284,7 @@ describe('Twilio', function() {
         expect(err).not.to.exist;
 
         done();
-      })
+      });
     });
   });
 

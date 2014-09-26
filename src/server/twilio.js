@@ -81,7 +81,7 @@ Twilio.prototype._sendFinish = function _sendFinish(options, res, cb) {
   if (res.status > 202) {
     var body = res.body || {};
 
-    var err = new Error(body.message || 'Something went wrong!')
+    var err = new Error(body.message || 'Something went wrong!');
     err.options = options;
 
     return cb(err);
