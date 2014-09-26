@@ -29,6 +29,8 @@ describe('Sendgrid', function() {
 
 
   it('sends an email', function(done) {
+    this.timeout(5000);
+
     var email = {
       from: process.env.TEST_EMAIL_FROM,
       fromname: 'Sendgrid Integration Test',
