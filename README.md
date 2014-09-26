@@ -1,36 +1,48 @@
 # thehelp-messaging
 
-Wrappers for messaging-related APIs. For now, Twilio and Sendgrid.
+A lightweight package for sending SMS via Twilio, and email via Sendgrid. Also makes it easy to receive SMS and email from these services.
 
 ## Setup
 
-To use the `Sendgrid` class, you'll need these two environment variables set:
+First, install the project as aß dependency:
+
+```bash
+npm install thehelp-messaging --save
+```
+
+Then you'll need to provide your credentials for these services. You can do it in code, but I prefer to set it up with environment variables:
+
+To send email, create a Sendgrid sub-user account here: <https://sendgrid.com/credentials> and use its credentials:
 
 ```
-"SENDGRID_USERNAME": "username"
-"SENDGRID_PASSWORD": "raw password, unfortunately"
+"THEHELP_SENDGRID_USERNAME": "username"
+"THEHELP_SENDGRID_PASSWORD": "password"
 ```
-To use the `Twilio` class, you'll need these two environment variables:
+
+To send SMS, grab your Twilio credentials: <https://www.twilio.com/user/account/settings>
 
 ```
-"TWILIO_KEY": "'Account SID' on your account detail page"
-"TWILIO_TOKEN": "your 'Auth Token' on that same page"
+"THEHELP_TWILIO_KEY": "your AccountSID"
+"THEHELP_TWILIO_TOKEN": "your AuthToken"
 ```
+
+We'll save the configuration for receiving SMS and email for a bit later.
 
 ## Usage
 
-It's as easy as this for `Twilio`:
+With that all set up, tt's as easy as this for SMS:
 
 ```
 var Twilio = require('thehelp-messaging').Twilio;
 var twilio = new Twilio();
-var text = {
-  from: '+1 5551000000',
-  to: '+1 5551000000',
-  body: 'my first text mesage!'
+
+var sms = {
+  From: '+15551000000',
+  To: '+15551000000',
+  Body: 'my first text mesage!'
 };
 
-twilio.send(text, function(err) {
+twilio.send(sms, function(err) {
   if (err) {
     throw err;
   }
@@ -42,8 +54,9 @@ twilio.send(text, function(err) {
 ```
 var Sendgrid = require('thehelp-messaging').Sendgrid;
 var sendgrid = new Sendgrid();
+
 var email = {
-  from: 'Someone <someone@somewhere>',
+  from: 'someone@somewhere',
   to: 'recipient@somewhere',
   subject: 'subject!',
   body: 'Body of the message'
