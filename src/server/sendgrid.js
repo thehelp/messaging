@@ -97,26 +97,29 @@ SendGrid.prototype.send = function(email, cb) {
 To help you deal with requests coming from Sendgrid, described here:
 <https://sendgrid.com/docs/API_Reference/Webhooks/parse.html>
 
-_Note: Don't forget to disable CSRF checking for this endpoint!_
+_Note: Don't forget to disable CSRF checking for your incoming email endpoint!_
 */
 
 /*
 It's kind of a pain to parse incoming Sendgrid emails because their content type is
 'multipart/form-data'. This middleware function pulls all non-file data out of the
-Sendgrid request, and then makes that available at `req.email`.
+Sendgrid request, and then makes that available at `req.body`.
 
 Use it like this:
 ```
 app.post('/sendgrid/email', sendgrid.parse, function(req, res) {
-  console.log(req.email)
+  console.log(req.body)
   res.status(200);
   res.end();
-})
+});
 ```
+
+_Note: You'll need to supply [`Busboy`](https://github.com/mscdex/busboy) to this class
+on construction if you want to use this middleware method._Note
 */
 SendGrid.prototype.parse = function(req, res, next) {
   var type = req.headers['content-type'] || '';
-  var body = req.body || {};
+  req.body = req.body || {};
 
   if (!this.Busboy) {
     var err = new Error('Need to set options.Busboy!');
@@ -124,18 +127,16 @@ SendGrid.prototype.parse = function(req, res, next) {
   }
 
   if (type.indexOf('multipart') < 0) {
-    req.email = body;
     next();
   }
 
   var busboy = new this.Busboy({headers: req.headers});
 
   busboy.on('field', function(name, value) {
-    body[name] = value;
+    req.body[name] = value;
   });
 
   busboy.on('finish', function() {
-    req.email = body;
     next();
   });
 
@@ -157,12 +158,11 @@ We just add one new middleware function:
 
 ```
 app.post('/sendgrid/email', sendgrid.validate, sendgrid.parse, function(req, res) {
-  console.log(req.email)
+  console.log(req.body)
   res.status(200);
   res.end();
 })
 ```
-
 */
 SendGrid.prototype.validate = function(req, res, next) {
   var err;

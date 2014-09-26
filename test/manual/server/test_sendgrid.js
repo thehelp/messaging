@@ -63,10 +63,10 @@ describe('Sendgrid', function() {
 
       var from = email.fromname + ' <' + email.from + '>';
 
-      expect(req.email).to.have.property('from', from);
-      expect(req.email).to.have.property('to', email.to);
-      expect(req.email).to.have.property('subject', email.subject);
-      expect(req.email).to.have.property('text', email.text + '\n');
+      expect(req.body).to.have.property('from', from);
+      expect(req.body).to.have.property('to', email.to);
+      expect(req.body).to.have.property('subject', email.subject);
+      expect(req.body).to.have.property('text', email.text + '\n');
 
       res.end();
       done();
