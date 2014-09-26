@@ -28,6 +28,14 @@ function Twilio(options) {
     throw new Error('need to set environment variable (TWILIO_TOKEN)');
   }
 
+  this.twilio = options.twilio;
+  this.development = options.development;
+  if (typeof this.development === 'undefined') {
+    options.development = process.env.NODE_ENV === 'development';
+  }
+
+  this.validate = this.validate.bind(this);
+
   this.superagent = options.superagent || superagent;
 }
 
@@ -147,5 +155,60 @@ Twilio.prototype.truncate = function truncate(limit, text) {
   }
   return text;
 };
+
+// Express middleware
+// =======
+
+/*
+Documentation kind of sucks for incoming SMS on Twilio, but there is some:
+
++ <https://www.twilio.com/docs/quickstart/php/sms/hello-monkey>
+*/
+
+/*
+It just so happens that the `twilio` npm package provides a
+[nice little function](http://twilio.github.io/twilio-node/#validateExpressRequest) to
+validate an incoming request. This little bit of middleware calls that when not in
+development mode, using the Twilio API Key and Token you've already provided.
+
+Just put it in front of your POST handler:
+```
+app.post('/twilio/sms', twilio.validate, function(req, res) {
+  console.log(req.body);
+  res.status(200);
+  res.end();
+})
+```
+
+Some trouble-shooting tips:
+
++ To use this, you have to install the `twilio` node module and pass it in on construction
++ Did you install any middleware to parse the
+[`urlencoded`](https://github.com/expressjs/body-parser#bodyparserurlencodedoptions)
+body of the request?
++ Disable CSRF checking for this endpoint
++ The validation function gets the `host` and `protocol` from Express. If you're beind
+a proxy, it's easiest to `app.enable('trust proxy');`
+
+*/
+Twilio.prototype.validate = function(req, res, next) {
+  var err;
+
+  if (!this.twilio) {
+    err = new Error('Need to set options.twilio');
+    return next(err);
+  }
+
+  if (!this.development && !this.twilio.validateExpressRequest(req, this.token)) {
+    err = new Error('Request did not pass twilio validation');
+    err.body = req.body;
+    err.status = 400;
+    err.text = 'You aren\'t twilio, are you?';
+    return next(err);
+  }
+
+  next();
+};
+
 
 module.exports = Twilio;

@@ -5,36 +5,69 @@ var test = require('thehelp-test');
 var expect = test.expect;
 
 var Twilio = require('../../../src/server/twilio');
+var app = require('../../start_server');
+var twilioSdk = require('twilio');
+
 
 describe('Twilio', function() {
   var twilio = null;
 
   beforeEach(function() {
-    twilio = new Twilio();
-  });
+    twilio = new Twilio({
+      twilio: twilioSdk
+    });
 
-  it('needed environment variables are in place', function() {
+    // library variables
     expect(process.env).to.have.property('TWILIO_KEY').that.exist;
     expect(process.env).to.have.property('TWILIO_TOKEN').that.exist;
-    expect(process.env).to.have.property('NOTIFY_SMS_FROM').that.exist;
-    expect(process.env).to.have.property('NOTIFY_SMS_TO').that.exist;
+
+    // test-specific variables
+    expect(process.env).to.have.property('TEST_SMS_FROM').that.exist;
+    expect(process.env).to.have.property('TEST_SMS_MANUAL_RECEIVE').that.exist;
+    expect(process.env).to.have.property('TEST_SMS_RECEIVE').that.exist;
   });
 
-  it('sends a text message', function(done) {
+  it('sends an sms', function(done) {
     this.timeout(5000);
 
-    var text = {
-      from: process.env.NOTIFY_SMS_FROM,
-      to: process.env.NOTIFY_SMS_TO,
+    var sms = {
+      from: process.env.TEST_SMS_FROM,
+      to: process.env.TEST_SMS_MANUAL_RECEIVE,
       body: 'thehelp twilio integration test!'
     };
 
-    twilio.send(text, function(err) {
+    twilio.send(sms, function(err) {
       if (err) {
         throw err;
       }
 
       return done();
+    });
+  });
+
+  it('receives an sms', function(done) {
+    this.timeout(10000);
+
+    var sms = {
+      from: process.env.TEST_SMS_FROM,
+      to: process.env.TEST_SMS_RECEIVE,
+      body: 'thehelp twilio integration test!'
+    };
+
+    app.post('/twilio/sms', twilio.validate, function(req, res) {
+
+      expect(req.body).to.have.property('From', sms.from);
+      expect(req.body).to.have.property('To', sms.to);
+      expect(req.body).to.have.property('Body', sms.body);
+
+      res.end();
+      done();
+    });
+
+    twilio.send(sms, function(err) {
+      if (err) {
+        throw err;
+      }
     });
   });
 });
