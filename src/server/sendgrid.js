@@ -52,8 +52,8 @@ SendGrid.prototype.send = function(email, cb) {
   if (!email.from) {
     return cb(new Error('sendgrid/send: need email.from!'));
   }
-  if (!email.text) {
-    return cb(new Error('sendgrid/send: need email.text!'));
+  if (!email.text && !email.html) {
+    return cb(new Error('sendgrid/send: need either email.text or email.html!'));
   }
   if (!email.subject) {
     return cb(new Error('sendgrid/send: need email.subject!'));
