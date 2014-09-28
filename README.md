@@ -69,7 +69,7 @@ sendgrid.send(email, function(err) {
 });
 ```
 
-[Detailed API documentation](https://sendgrid.com/docs/API_Reference/Web_API/mail.html).
+[Detailed Sendgrid API documentation](https://sendgrid.com/docs/API_Reference/Web_API/mail.html).
 
 ## Send SMS
 
@@ -91,7 +91,7 @@ twilio.send(sms, function(err) {
 ```
 
 Yep, those key names are all capitalized. :0(
-[Detailed API documentation](https://www.twilio.com/docs/api/rest/sending-sms).
+[Detailed Twilio API documentation](https://www.twilio.com/docs/api/rest/sending-sms).
 
 
 ## Receiving messages
@@ -126,7 +126,7 @@ app.post('/sendgrid/email', sendgrid.validate, sendgrid.parse, function(req, res
 });
 ```
 
-[`validate`](LINK TO DEEP DOCS) will ensure that the message is really from Sendgrid (via the 'verify' querystrying parameter and your environment variable. [`parse`](LINK TO DEEP DOCS) will use `busboy` to parse out all the non-file components sent by Sendgrid.
+[`validate`](http://thehelp.github.io/messaging/src/server/sendgrid.html) will ensure that the message is really from Sendgrid (via the 'verify' querystrying parameter and your environment variable. [`parse`](http://thehelp.github.io/messaging/src/server/sendgrid.html) will use `busboy` to parse out all the non-file components sent by Sendgrid.
 
 Now you just need to set up the [Sengrid Parse dashboard](https://sendgrid.com/developer/reply) to point a given email subdomain of your site to your server. This is kind of a pain to test by deploying to your server all the time, so check out [ngrok](https://ngrok.com/) for exposing a port on your machine to the outside world.
 
@@ -153,7 +153,7 @@ app.post('/twilio/sms', bodyParser.urlencoded(), twilio.validate, function(req, 
 
 Now you need to buy a phone number on Twilio and [have it forward SMS sent to it to your application](https://www.twilio.com/user/account/phone-numbers/incoming). Again, check out [ngrok](https://ngrok.com/) for exposing a port on your machine to the outside world. It makes iterating on your SMS setup that much faster.
 
-There are a few additional troublshooting tips in the [`Twilio.validate` detailed documentation.](LINK TO DEEP DOCS).
+There are a few additional troublshooting tips in the [`Twilio.validate` detailed documentation.]((http://thehelp.github.io/messaging/src/server/twilio.html)).
 
 ## Contributing changes
 

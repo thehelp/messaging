@@ -204,6 +204,9 @@ body of the request?
 + Disable CSRF checking for this endpoint
 + The validation function gets the `host` and `protocol` from Express. If you're behind
 a proxy, it's easiest to `app.enable('trust proxy');`
++ As of August 2014, Twilio does not support TLS. Your https server needs to support some
+ version of SSL.
+ [More information on how to set up SSL securely](https://www.ssllabs.com/index.html).
 
 */
 Twilio.prototype.validate = function validate(req, res, next) {

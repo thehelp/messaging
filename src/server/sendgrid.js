@@ -11,10 +11,10 @@ var superagent = require('superagent');
 /*
 Two environment varialbes are required to create a `Sendgrid` instance:
 
-1. `username`/`SENDGRID_USERNAME` - this is your raw Sendgrid account username
-2. `password`/`SENDGRID_PASSWORD` - unfortunately, this is the same password as your
-account. Not an account API access token. I heartily recommend that you
-create additional sub-accounts to use for your programs:
+1. `username`/`THEHELP_SENDGRID_USERNAME` - this is your raw Sendgrid account username
+2. `password`/`THEHELP_SENDGRID_PASSWORD` - unfortunately, this is the same password as
+your account. Not an account API access token. I heartily recommend that you create
+additional sub-accounts to use for your programs:
 <https://sendgrid.com/docs/User_Guide/multiple_credentials.html>.
 */
 function SendGrid(options) {
