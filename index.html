@@ -1,0 +1,213 @@
+<!DOCTYPE html><html lang="en"><head><title>index</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="index"><meta name="groc-project-path" content="README.md"><meta name="groc-github-url" content="https://github.com/thehelp/messaging"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path"><a href="https://github.com/thehelp/messaging/blob/master/README.md">README.md</a></div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><p><a href="https://travis-ci.org/thehelp/messaging"><img src="https://travis-ci.org/thehelp/messaging.svg?branch=master" alt="Build Status" title="" /></a></p>
+
+<h1 id="thehelp-messaging">thehelp-messaging</h1>
+
+<p>A lightweight package for sending SMS via <a href="https://www.twilio.com">Twilio</a>, and email via <a href="http://sendgrid.com/">Sendgrid</a>. Also makes it easy to receive SMS and email from these services in <a href="http://expressjs.com/"><code>express</code></a>-based apps.</p>
+
+<h2 id="setup">Setup</h2>
+
+<p>First, install the project as a dependency:</p>
+
+<pre><code class="bash">npm install thehelp-messaging --save
+</code></pre>
+
+<p>Then you'll need to provide your credentials for these services. You can do it in code, but I prefer to set it up with environment variables...</p>
+
+<h3 id="email-via-sendgrid">Email via Sendgrid</h3>
+
+<p><a href="https://sendgrid.com/credentials">Create a Sendgrid sub-user account</a> and use its credentials:</p>
+
+<pre><code class="json">{
+  "THEHELP_SENDGRID_USERNAME": "username",
+  "THEHELP_SENDGRID_PASSWORD": "password"
+}
+</code></pre>
+
+<h3 id="sms-via-twilio">SMS via Twilio</h3>
+
+<p>Grab your Twilio API keys from your <a href="https://www.twilio.com/user/account/settings">account settings page</a>:</p>
+
+<pre><code class="json">{
+  "THEHELP_TWILIO_KEY": "your AccountSID",
+  "THEHELP_TWILIO_TOKEN": "your AuthToken"
+}
+</code></pre>
+
+<p>We'll save the configuration for <strong>receiving</strong> SMS and email for a bit later.</p>
+
+<h2 id="sending-messages">Sending messages</h2>
+
+<p>With that all set up, it's as easy as this:</p>
+
+<h3 id="send-email">Send email</h3>
+
+<pre><code class="javascript">var Sendgrid = require('thehelp-messaging').Sendgrid;
+var sendgrid = new Sendgrid();
+
+var email = {
+  from: 'someone@somewhere',
+  to: 'recipient@somewhere',
+  subject: 'subject!',
+
+  // this or html is required
+  text: 'Plaintext message body!!1',
+
+  // optional
+  fromname: 'User Name'
+};
+
+sendgrid.send(email, function(err) {
+  if (err) {
+    throw err;
+  }
+});
+</code></pre>
+
+<p><a href="https://sendgrid.com/docs/API_Reference/Web_API/mail.html">Detailed Sendgrid API documentation</a>.</p>
+
+<h2 id="send-sms">Send SMS</h2>
+
+<pre><code class="javascript">var Twilio = require('thehelp-messaging').Twilio;
+var twilio = new Twilio();
+
+var sms = {
+  From: '+15551000000',
+  To: '+15551000000',
+  Body: 'my first text message!'
+};
+
+twilio.send(sms, function(err) {
+  if (err) {
+    throw err;
+  }
+});
+</code></pre>
+
+<p>Yep, those key names are all capitalized. :0(
+<a href="https://www.twilio.com/docs/api/rest/sending-sms">Detailed Twilio API documentation</a>.</p>
+
+<h2 id="receiving-messages">Receiving messages</h2>
+
+<p>This project includes some <code>express</code> middleware helpers for receiving SMS from Twilio and Email from Sendgrid.</p>
+
+<h3 id="receive-mail">Receive mail</h3>
+
+<p>You'll need one new environment variable:</p>
+
+<pre><code class="json">{
+  "THEHELP_SENDGRID_VERIFY": "a hard-to-guess value",
+}
+</code></pre>
+
+<p>And you'll need to download and install the <a href="https://www.npmjs.org/package/busboy"><code>busboy</code></a> node module and (1.2.9 recommended) supply it to the <code>Sendgrid</code> class on construction:</p>
+
+<pre><code class="javascript">var express = require('express');
+var Busboy = require('busboy');
+var Sendgrid = require('thehelp-messaging').Sendgrid;
+
+var app = express();
+var sendgrid = new Sendgrid({
+  Busboy: Busboy
+});
+
+app.post('/sendgrid/email', sendgrid.validate, sendgrid.parse, function(req, res) {
+  console.log('email:', req.body);
+  res.end();
+});
+</code></pre>
+
+<p><a href="http://thehelp.github.io/messaging/src/server/sendgrid.html"><code>validate</code></a> will ensure that the message is really from Sendgrid (via the 'verify' querystrying parameter and your environment variable. <a href="http://thehelp.github.io/messaging/src/server/sendgrid.html"><code>parse</code></a> will use <code>busboy</code> to parse out all the non-file components sent by Sendgrid.</p>
+
+<p>Now you just need to set up the <a href="https://sendgrid.com/developer/reply">Sengrid Parse dashboard</a> to point a given email subdomain of your site to your server. This is kind of a pain to test by deploying to your server all the time, so check out <a href="https://ngrok.com/">ngrok</a> for exposing a port on your machine to the outside world.</p>
+
+<h3 id="receive-sms">Receive SMS</h3>
+
+<p>Twilio messages are easier to deal with, because they're more easily parsed. However, you still have the problem of ensuring that the message is really from Twilio. That's where <code>twilio.validate()</code> comes in - note the new node modules required:</p>
+
+<pre><code class="javascript">var express = require('express');
+var bodyPraser = require('body-parser');
+var twilioSdk = require('twilio');
+var Twilio = require('thehelp-messaging').Twilio;
+
+var app = express();
+var twilio = new Twilio({
+  twilio: twilioSdk
+});
+
+app.post('/twilio/sms', bodyParser.urlencoded(), twilio.validate, function(req, res) {
+  console.log('sms:', req.body);
+  res.end();
+});
+</code></pre>
+
+<p>Now you need to buy a phone number on Twilio and <a href="https://www.twilio.com/user/account/phone-numbers/incoming">have it forward SMS sent to it to your application</a>. Again, check out <a href="https://ngrok.com/">ngrok</a> for exposing a port on your machine to the outside world. It makes iterating on your SMS setup that much faster.</p>
+
+<p>There are a few additional troublshooting tips in the <a href="(http://thehelp.github.io/messaging/src/server/twilio.html)"><code>Twilio.validate</code> detailed documentation.</a>.</p>
+
+<h2 id="contributing-changes">Contributing changes</h2>
+
+<p>It's a pretty involved project. You'll need Sendgrid and Twilio accounts, and all the environment variables mentioned above.</p>
+
+<h3 id="running-tests">Running tests</h3>
+
+<p>The unit tests are quick and easy, but the manual tests (not part of the <code>grunt</code> 'default' task) in this project are pretty involved. They:</p>
+
+<p>1) send SMS and email to a phone number and email address for manual verification, and
+  2) send SMS and email and then receive those messages programmatically</p>
+
+<p>You'll need some additional environment variables:</p>
+
+<pre><code class="json">{
+  "TEST_EMAIL_FROM": "who the emails will be from",
+  "TEST_SMS_FROM": "an SMS-capable phone number you own on Twilio",
+
+  "TEST_EMAIL_MANUAL_RECEIVE": "where you'll get emails for manual verify",
+  "TEST_SMS_MANUAL_RECEIVE": "where you'll get SMS for manual verify",
+
+  "TEST_EMAIL_RECEIVE": "email set up for receive by Sendgrid",
+  "TEST_SMS_RECEIVE": "an SMS-capable phone number you own on Twilio"
+}
+</code></pre>
+
+<p>Those last two environment variables are where things get really interesting. You'll need to set up Sendgrid and Twilio to forward messages to your machine. See the 'Receiving messages' section above.</p>
+
+<h3 id="pull-requests">Pull requests</h3>
+
+<p>When you have some changes ready, please include:</p>
+
+<ul>
+<li>Justification - why is this change worthwhile? Link to issues, use code samples, etc.</li>
+<li>Documentation changes for your code updates. Be sure to check the groc-generated HTML with <code>grunt doc</code></li>
+<li>A description of how you tested the change. Don't forget about the very-useful <code>npm link</code> command :0)</li>
+</ul>
+
+<p>I may ask you to use a <code>git rebase</code> to ensure that your commits are not interleaved with commits already in the history. And of course, make sure <code>grunt</code> completes successfully (take a look at the requirements for <a href="https://github.com/thehelp/project"><code>thehelp-project</code></a>). :0)</p>
+
+<h2 id="detailed-documentation">Detailed Documentation</h2>
+
+<p>Detailed docs be found at this project's GitHub Pages, thanks to <code>groc</code>: <a href="http://thehelp.github.io/messaging">http://thehelp.github.io/messaging</a></p>
+
+<h2 id="license">License</h2>
+
+<p>(The MIT License)</p>
+
+<p>Copyright (c) 2013 Scott Nonnenberg &lt;scott@nonnenberg.com&gt;</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p></div></div></div></div></body></html>

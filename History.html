@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="en"><head><title>History</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="History"><meta name="groc-project-path" content="History.md"><meta name="groc-github-url" content="https://github.com/thehelp/messaging"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path"><a href="https://github.com/thehelp/messaging/blob/master/History.md">History.md</a></div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h2 id="100-2014-09-27">1.0.0 (2014-09-27)</h2>
+
+<p>Breaking changes:</p>
+
+<ul>
+<li>All environment variables now prefixed with 'THEHELP_'</li>
+<li>Capitalized key names now required for <code>Twilio.send()</code>, happily this allows additional paramebers to be included in the request</li>
+<li><code>Sendgrid.send()</code> now requires either <code>text</code> or <code>html</code> keys be provided. Similarly, means that additional parameters can be add for inclusion in the request to Sendgrid.</li>
+</ul>
+
+<p>Other updates:</p>
+
+<ul>
+<li>Comprehensive testing: unit testing and manual tests for sending/receiving messages</li>
+<li>All test-related environment variables now prefixed with 'TEST_'</li>
+<li>Removed <code>nodemailer</code>, <code>lodash</code> and <code>winston</code> as dependencies</li>
+<li>Add support for receiving and validating incoming Sendgrid/Twilio messages</li>
+<li>Pare down what's in npm package</li>
+<li>Updated dev dependencies</li>
+</ul>
+
+<h2 id="013-2014-03-25">0.1.3 (2014-03-25)</h2>
+
+<ul>
+<li>Minor version updates: <code>async</code>, <code>superagent</code></li>
+<li>Patch updates: <code>nodemailer</code></li>
+<li>Updated a few dev dependencies</li>
+</ul>
+
+<h2 id="012-2014-03-13">0.1.2 (2014-03-13)</h2>
+
+<ul>
+<li>Patch updates: grunt, thehelp-core, thehelp-test</li>
+<li>Minor version updates: thehelp-project, nodemailer, superagent</li>
+<li>Fixed too-long lines after thehelp-project upgrade</li>
+</ul>
+
+<h2 id="011-2013-12-18">0.1.1 (2013-12-18)</h2>
+
+<ul>
+<li>Fixing package.json parse errors</li>
+</ul>
+
+<h2 id="010-2013-12-14">0.1.0 (2013-12-14)</h2>
+
+<ul>
+<li>Twilio and Sendgrid are functional</li>
+</ul></div></div></div></div></body></html>

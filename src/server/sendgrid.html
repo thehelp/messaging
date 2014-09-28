@@ -1,0 +1,174 @@
+<!DOCTYPE html><html lang="en"><head><title>src/server/sendgrid</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="src/server/sendgrid"><meta name="groc-project-path" content="src/server/sendgrid.js"><meta name="groc-github-url" content="https://github.com/thehelp/messaging"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path"><a href="https://github.com/thehelp/messaging/blob/master/src/server/sendgrid.js">src/server/sendgrid.js</a></div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="sendgrid">Sendgrid</h1>
+
+<p>This class is a thin wrappper around the Sendgrid Send mail REST endpoint:
+<a href="https://sendgrid.com/docs/API_Reference/Web_API/mail.html">https://sendgrid.com/docs/API_Reference/Web_API/mail.html</a>.</p></div></div><div class="code"><div class="wrapper"><span class="s1">&#39;use strict&#39;</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">superagent</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;superagent&#39;</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Two environment varialbes are required to create a <code>Sendgrid</code> instance:</p>
+
+<ol>
+<li><code>username</code>/<code>THEHELP_SENDGRID_USERNAME</code> - this is your raw Sendgrid account username</li>
+<li><code>password</code>/<code>THEHELP_SENDGRID_PASSWORD</code> - unfortunately, this is the same password as
+your account. Not an account API access token. I heartily recommend that you create
+additional sub-accounts to use for your programs:
+<a href="https://sendgrid.com/docs/User_Guide/multiple_credentials.html">https://sendgrid.com/docs/User_Guide/multiple_credentials.html</a>.</li>
+</ol></div></div><div class="code"><div class="wrapper"><span class="kd">function</span> <span class="nx">SendGrid</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span> <span class="p">{</span>
+  <span class="cm">/*jshint maxcomplexity: 8 */</span>
+
+  <span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{};</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">username</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">username</span> <span class="o">||</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">THEHELP_SENDGRID_USERNAME</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">username</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;need to provide sendgrid username by options or env var&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">password</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">password</span> <span class="o">||</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">THEHELP_SENDGRID_PASSWORD</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">password</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;need to provide sendgrid password by options or env var&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">verify</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">verify</span> <span class="o">||</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">THEHELP_SENDGRID_VERIFY</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">Busboy</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">Busboy</span><span class="p">;</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">parse</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">parse</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">validate</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">validate</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">superagent</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">superagent</span> <span class="o">||</span> <span class="nx">superagent</span><span class="p">;</span>
+<span class="p">}</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="commonly-used-methods">Commonly-Used Methods</h2></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>send</code> checks that all four required keys are included on the provided
+<code>options</code> object:</p>
+
+<ul>
+<li><code>to</code></li>
+<li><code>from</code>,</li>
+<li><code>text</code> or <code>html</code></li>
+<li><code>subject</code></li>
+</ul>
+
+<p>More documentation on the endpoint we hit:
+<a href="https://sendgrid.com/docs/API_Reference/Web_API/mail.html">https://sendgrid.com/docs/API_Reference/Web_API/mail.html</a>. We pass your
+payload directly to it, after adding your sendgrid credentials.</p></div></div><div class="code"><div class="wrapper"><span class="nx">SendGrid</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">send</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">send</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="cm">/*jshint maxcomplexity: 8 */</span>
+  <span class="cm">/*jshint camelcase: false */</span>
+  <span class="kd">var</span> <span class="nx">_this</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+
+  <span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span> <span class="o">||</span> <span class="p">{};</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">to</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;sendgrid/send: need options.to!&#39;</span><span class="p">));</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">from</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;sendgrid/send: need options.from!&#39;</span><span class="p">));</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">text</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">html</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;sendgrid/send: need either options.text or options.html!&#39;</span><span class="p">));</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">subject</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;sendgrid/send: need options.subject!&#39;</span><span class="p">));</span>
+  <span class="p">}</span>
+
+  <span class="nx">options</span><span class="p">.</span><span class="nx">api_user</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">api_user</span> <span class="o">||</span> <span class="k">this</span><span class="p">.</span><span class="nx">username</span><span class="p">;</span>
+  <span class="nx">options</span><span class="p">.</span><span class="nx">api_key</span> <span class="o">=</span> <span class="nx">options</span><span class="p">.</span><span class="nx">api_key</span> <span class="o">||</span> <span class="k">this</span><span class="p">.</span><span class="nx">password</span><span class="p">;</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">superagent</span>
+    <span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;https://api.sendgrid.com/api/mail.send.json&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">type</span><span class="p">(</span><span class="s1">&#39;form&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">_this</span><span class="p">.</span><span class="nx">_sendFinish</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">cb</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>_sendFinish</code> handles the payload returned to us from the call to Sendgrid.</p></div></div><div class="code"><div class="wrapper"><span class="nx">SendGrid</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_sendFinish</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">_sendFinish</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span> <span class="o">!==</span> <span class="mi">200</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">body</span> <span class="o">=</span> <span class="nx">res</span><span class="p">.</span><span class="nx">body</span> <span class="o">||</span> <span class="p">{};</span>
+    <span class="kd">var</span> <span class="nx">message</span> <span class="o">=</span> <span class="nx">body</span><span class="p">.</span><span class="nx">message</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">body</span><span class="p">.</span><span class="nx">errors</span> <span class="o">&amp;&amp;</span> <span class="nx">body</span><span class="p">.</span><span class="nx">errors</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">message</span> <span class="o">=</span> <span class="nx">body</span><span class="p">.</span><span class="nx">errors</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="kd">var</span> <span class="nx">err</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="nx">message</span> <span class="o">||</span> <span class="s1">&#39;Something went wrong!&#39;</span><span class="p">);</span>
+    <span class="nx">err</span><span class="p">.</span><span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">body</span><span class="p">);</span>
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h1 id="express-middleware">Express middleware</h1></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>To help you deal with requests coming from Sendgrid, described here:
+<a href="https://sendgrid.com/docs/API_Reference/Webhooks/parse.html">https://sendgrid.com/docs/API_Reference/Webhooks/parse.html</a></p>
+
+<p><em>Note: Don't forget to disable CSRF checking for your incoming options endpoint!</em></p></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>It's kind of a pain to parse incoming Sendgrid optionss because their content type is
+'multipart/form-data'. This middleware function pulls all non-file data out of the
+Sendgrid request, and then makes that available at <code>req.body</code>.</p>
+
+<p>Use it like this:</p>
+
+<pre><code>app.post('/sendgrid/options', sendgrid.parse, function(req, res) {
+  console.log(req.body)
+  res.status(200);
+  res.end();
+});
+</code></pre>
+
+<p><em>Note: You'll need to supply <a href="https://github.com/mscdex/busboy"><code>Busboy</code></a> to this class
+on construction if you want to use this middleware method.</em>Note</p></div></div><div class="code"><div class="wrapper"><span class="nx">SendGrid</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">parse</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">parse</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">type</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">headers</span><span class="p">[</span><span class="s1">&#39;content-type&#39;</span><span class="p">]</span> <span class="o">||</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+  <span class="nx">req</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span> <span class="o">||</span> <span class="p">{};</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">Busboy</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">err</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;Need to set options.Busboy on construction!&#39;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">next</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">type</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;multipart&#39;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">next</span><span class="p">();</span>
+  <span class="p">}</span>
+
+  <span class="kd">var</span> <span class="nx">busboy</span> <span class="o">=</span> <span class="k">new</span> <span class="k">this</span><span class="p">.</span><span class="nx">Busboy</span><span class="p">({</span><span class="nx">headers</span><span class="o">:</span> <span class="nx">req</span><span class="p">.</span><span class="nx">headers</span><span class="p">});</span>
+
+  <span class="nx">busboy</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+  <span class="p">});</span>
+
+  <span class="nx">busboy</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;finish&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">next</span><span class="p">();</span>
+  <span class="p">});</span>
+
+  <span class="nx">req</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">busboy</span><span class="p">);</span>
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>But we don't want to accept incoming emails from just anyone. We want to be sure we're
+really dealing with Sendgrid. On the
+<a href="https://sendgrid.com/developer/reply">inbound dashboard</a> you can add a querystring to
+the URL Sendgrid will hit.</p>
+
+<p>This method assumes that you've set up a <code>verify</code> querystring and the correct value of
+that querystring is either set in the <code>SENDGRID_VERIFY</code> environment variable or
+directly passed to this class on construction.</p>
+
+<p>We just add one new middleware function:</p>
+
+<pre><code>app.post('/sendgrid/options', sendgrid.validate, sendgrid.parse, function(req, res) {
+  console.log(req.body)
+  res.status(200);
+  res.end();
+})
+</code></pre></div></div><div class="code"><div class="wrapper"><span class="nx">SendGrid</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">validate</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">validate</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">err</span><span class="p">;</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">verify</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">err</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span>
+      <span class="s1">&#39;Need to provide sendgrid verify value on construction or via env var&#39;</span>
+    <span class="p">);</span>
+    <span class="k">return</span> <span class="nx">next</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">query</span><span class="p">.</span><span class="nx">verify</span> <span class="o">!==</span> <span class="k">this</span><span class="p">.</span><span class="nx">verify</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">err</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;Request did not pass sendgrid validation&#39;</span><span class="p">);</span>
+    <span class="nx">err</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">;</span>
+    <span class="nx">err</span><span class="p">.</span><span class="nx">query</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">query</span><span class="p">;</span>
+    <span class="nx">err</span><span class="p">.</span><span class="nx">status</span> <span class="o">=</span> <span class="mi">400</span><span class="p">;</span>
+    <span class="nx">err</span><span class="p">.</span><span class="nx">text</span> <span class="o">=</span> <span class="s1">&#39;You aren\&#39;t sendgrid, are you?&#39;</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nx">next</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="nx">next</span><span class="p">();</span>
+<span class="p">};</span>
+
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">SendGrid</span><span class="p">;</span></div></div></div></div></body></html>
