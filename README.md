@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/thehelp/messaging.svg?branch=master)](https://travis-ci.org/thehelp/messaging)
+
 # thehelp-messaging
 
 A lightweight package for sending SMS via [Twilio](https://www.twilio.com), and email via [Sendgrid](http://sendgrid.com/). Also makes it easy to receive SMS and email from these services in [`express`](http://expressjs.com/)-based apps.
@@ -54,7 +56,7 @@ var email = {
   subject: 'subject!',
 
   // this or html is required
-  text: 'Plaintext message body',
+  text: 'Plaintext message body!!1',
 
   // optional
   fromname: 'User Name'
@@ -78,7 +80,7 @@ var twilio = new Twilio();
 var sms = {
   From: '+15551000000',
   To: '+15551000000',
-  Body: 'my first text mesage!'
+  Body: 'my first text message!'
 };
 
 twilio.send(sms, function(err) {
