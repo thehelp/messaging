@@ -18,6 +18,10 @@
     "twilio": "1.7.0"
   },
 
+  "scripts": {
+    "test": "grunt"
+  },
+
   "config": {
     "blanket": {
       "data-cover-only": "src",
@@ -25,9 +29,26 @@
     }
   },
 
+  "description": "A lightweight package for sending SMS via Twilio, and email via Sendgrid. Also makes it easy to receive SMS and email from these services in express-based apps.",
+  "keywords": [
+    "twilio",
+    "express",
+    "sms",
+    "email",
+    "sendgrid",
+    "send",
+    "receive",
+    "lightweight",
+    "simple"
+  ],
+
   "author": "Scott Nonnenberg",
+  "license": "MIT",
+
+  "homepage": "https://github.com/thehelp/messaging",
   "repository": {
     "type": "git",
-    "url": "git@infra:thehelp-messaging"
-  }
+    "url": "git@github.com:thehelp/messaging.git"
+  },
+  "bugs": "https://github.com/thehelp/messaging/issues"
 }
