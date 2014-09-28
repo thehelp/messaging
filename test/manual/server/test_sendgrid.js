@@ -27,7 +27,6 @@ describe('Sendgrid', function() {
     expect(process.env).to.have.property('TEST_EMAIL_RECEIVE').that.exist;
   });
 
-
   it('sends an email', function(done) {
     this.timeout(5000);
 
@@ -78,6 +77,28 @@ describe('Sendgrid', function() {
       if (err) {
         throw err;
       }
+    });
+  });
+
+  it('handles a Sendgrid error on send', function(done) {
+    this.timeout(5000);
+
+    var email = {
+      from: process.env.TEST_EMAIL_FROM,
+      fromname: 'Sendgrid Integration Test',
+      to: process.env.TEST_EMAIL_MANUAL_RECEIVE,
+      subject: 'thehelp sendgrid integration test!',
+      text: 'Because you definitely need another email...'
+    };
+
+    delete sendgrid.password;
+
+    sendgrid.send(email, function(err) {
+
+      expect(err).to.have.property('message', 'Permission denied, wrong credentials');
+      expect(err).to.have.property('options').that.deep.equal(email);
+
+      return done();
     });
   });
 

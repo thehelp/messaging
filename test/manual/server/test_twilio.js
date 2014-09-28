@@ -70,4 +70,28 @@ describe('Twilio', function() {
       }
     });
   });
+
+  it('handles a Twilio error on send', function(done) {
+    this.timeout(5000);
+
+    var sms = {
+      From: process.env.TEST_SMS_FROM,
+      To: process.env.TEST_SMS_MANUAL_RECEIVE,
+      Body: 'thehelp twilio integration test!'
+    };
+
+    delete twilio.token;
+
+    twilio.send(sms, function(err) {
+
+      expect(err).to.have.property(
+        'message',
+        'Authentication Error - No credentials provided'
+      );
+      expect(err).to.have.property('options').that.deep.equal(sms);
+
+      return done();
+    });
+  });
+
 });
