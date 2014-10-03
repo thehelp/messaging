@@ -108,6 +108,15 @@ describe('Twilio', function() {
   });
 
   describe('#_sendFinish', function() {
+    it('returns error if error is provided', function(done) {
+      var expected = new Error('superagent error');
+      twilio._sendFinish(expected, null, null, function(err) {
+        expect(err).to.have.property('message', expected.message);
+
+        done();
+      });
+    });
+
     it('returns error if res.status is 400', function(done) {
       var response = 'error from twilio';
       var res = {
@@ -122,7 +131,7 @@ describe('Twilio', function() {
         Body: 'something'
       };
 
-      twilio._sendFinish(options, res, function(err) {
+      twilio._sendFinish(null, res, options, function(err) {
         expect(err).to.have.property('message').that.equal(response);
         expect(err).to.have.property('options').that.deep.equal(options);
 
@@ -135,7 +144,7 @@ describe('Twilio', function() {
         status: 400
       };
 
-      twilio._sendFinish(null, res, function(err) {
+      twilio._sendFinish(null, res, null, function(err) {
         expect(err).to.have.property('message').that.equal('Something went wrong!');
         done();
       });
@@ -146,7 +155,7 @@ describe('Twilio', function() {
         status: 400
       };
 
-      twilio._sendFinish(null, res, function(err) {
+      twilio._sendFinish(null, res, null, function(err) {
         expect(err).to.have.property('message').that.equal('Something went wrong!');
         done();
       });

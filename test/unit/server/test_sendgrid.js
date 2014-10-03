@@ -126,6 +126,15 @@ describe('Sendgrid', function() {
   });
 
   describe('#_sendFinish', function() {
+    it('returns error if error is provided', function(done) {
+      var expected = new Error('superagent error');
+      sendgrid._sendFinish(expected, null, null, function(err) {
+        expect(err).to.have.property('message', expected.message);
+
+        done();
+      });
+    });
+
     it('returns error if res.status is 400', function(done) {
       var response = 'error from sendgrid';
       var res = {
@@ -141,7 +150,7 @@ describe('Sendgrid', function() {
         subject: 'subject'
       };
 
-      sendgrid._sendFinish(options, res, function(err) {
+      sendgrid._sendFinish(null, res, options, function(err) {
         expect(err).to.have.property('message').that.equal(response);
         expect(err).to.have.property('options').that.deep.equal(options);
 
@@ -154,7 +163,7 @@ describe('Sendgrid', function() {
         status: 400
       };
 
-      sendgrid._sendFinish(null, res, function(err) {
+      sendgrid._sendFinish(null, res, null, function(err) {
         expect(err).to.have.property('message').that.equal('Something went wrong!');
         done();
       });
@@ -165,7 +174,7 @@ describe('Sendgrid', function() {
         status: 400
       };
 
-      sendgrid._sendFinish(null, res, function(err) {
+      sendgrid._sendFinish(null, res, null, function(err) {
         expect(err).to.have.property('message').that.equal('Something went wrong!');
         done();
       });

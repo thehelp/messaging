@@ -84,13 +84,17 @@ SendGrid.prototype.send = function send(options, cb) {
     .post('https://api.sendgrid.com/api/mail.send.json')
     .type('form')
     .send(options)
-    .end(function(res) {
-      _this._sendFinish(options, res, cb);
+    .end(function(err, res) {
+      _this._sendFinish(err, res, options, cb);
     });
 };
 
 // `_sendFinish` handles the payload returned to us from the call to Sendgrid.
-SendGrid.prototype._sendFinish = function _sendFinish(options, res, cb) {
+SendGrid.prototype._sendFinish = function _sendFinish(err, res, options, cb) {
+  if (err) {
+    return cb(err);
+  }
+
   if (res.status !== 200) {
     var body = res.body || {};
     var message = body.message;
@@ -99,7 +103,7 @@ SendGrid.prototype._sendFinish = function _sendFinish(options, res, cb) {
       message = body.errors[0];
     }
 
-    var err = new Error(message || 'Something went wrong!');
+    err = new Error(message || 'Something went wrong!');
     err.options = options;
 
     return cb(err);

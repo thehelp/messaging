@@ -70,18 +70,22 @@ Twilio.prototype.send = function send(options, cb) {
     .auth(this.key, this.token)
     .type('form')
     .send(options)
-    .end(function(res) {
-      _this._sendFinish(options, res, cb);
+    .end(function(err, res) {
+      _this._sendFinish(err, res, options, cb);
     });
 };
 
 // `_sendFinish` handles the payload returned to us from the call to Twilio.
-Twilio.prototype._sendFinish = function _sendFinish(options, res, cb) {
+Twilio.prototype._sendFinish = function _sendFinish(err, res, options, cb) {
+  if (err) {
+    return cb(err);
+  }
+
   //I've seen only 201 for success. But we allow for 202 as well.
   if (res.status > 202) {
     var body = res.body || {};
 
-    var err = new Error(body.message || 'Something went wrong!');
+    err = new Error(body.message || 'Something went wrong!');
     err.options = options;
 
     return cb(err);
