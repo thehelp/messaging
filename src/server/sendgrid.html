@@ -72,10 +72,14 @@ payload directly to it, after adding your sendgrid credentials.</p></div></div><
     <span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;https://api.sendgrid.com/api/mail.send.json&#39;</span><span class="p">)</span>
     <span class="p">.</span><span class="nx">type</span><span class="p">(</span><span class="s1">&#39;form&#39;</span><span class="p">)</span>
     <span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">options</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
-      <span class="nx">_this</span><span class="p">.</span><span class="nx">_sendFinish</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">cb</span><span class="p">);</span>
+    <span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">_this</span><span class="p">.</span><span class="nx">_sendFinish</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="nx">cb</span><span class="p">);</span>
     <span class="p">});</span>
-<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>_sendFinish</code> handles the payload returned to us from the call to Sendgrid.</p></div></div><div class="code"><div class="wrapper"><span class="nx">SendGrid</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_sendFinish</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">_sendFinish</span><span class="p">(</span><span class="nx">options</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+<span class="p">};</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>_sendFinish</code> handles the payload returned to us from the call to Sendgrid.</p></div></div><div class="code"><div class="wrapper"><span class="nx">SendGrid</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">_sendFinish</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">_sendFinish</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="nx">cb</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+  <span class="p">}</span>
+
   <span class="k">if</span> <span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">status</span> <span class="o">!==</span> <span class="mi">200</span><span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">body</span> <span class="o">=</span> <span class="nx">res</span><span class="p">.</span><span class="nx">body</span> <span class="o">||</span> <span class="p">{};</span>
     <span class="kd">var</span> <span class="nx">message</span> <span class="o">=</span> <span class="nx">body</span><span class="p">.</span><span class="nx">message</span><span class="p">;</span>
@@ -84,7 +88,7 @@ payload directly to it, after adding your sendgrid credentials.</p></div></div><
       <span class="nx">message</span> <span class="o">=</span> <span class="nx">body</span><span class="p">.</span><span class="nx">errors</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
     <span class="p">}</span>
 
-    <span class="kd">var</span> <span class="nx">err</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="nx">message</span> <span class="o">||</span> <span class="s1">&#39;Something went wrong!&#39;</span><span class="p">);</span>
+    <span class="nx">err</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="nx">message</span> <span class="o">||</span> <span class="s1">&#39;Something went wrong!&#39;</span><span class="p">);</span>
     <span class="nx">err</span><span class="p">.</span><span class="nx">options</span> <span class="o">=</span> <span class="nx">options</span><span class="p">;</span>
 
     <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
