@@ -1,3 +1,7 @@
+## 1.0.1 (2014-10-02)
+
+* Properly handle connectivity/other errors thrown by `superagent` - supply [callback with arity of two](http://visionmedia.github.io/superagent/#error-handling)
+
 ## 1.0.0 (2014-09-27)
 
 Breaking changes:

@@ -1,6 +1,6 @@
 {
   "name": "thehelp-messaging",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/server/index.js",
 
   "dependencies": {
