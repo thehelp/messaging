@@ -155,6 +155,12 @@ Now you need to buy a phone number on Twilio and [have it forward SMS sent to it
 
 There are a few additional troublshooting tips in the [`Twilio.validate` detailed documentation.]((http://thehelp.github.io/messaging/src/server/twilio.html)).
 
+
+## Detailed Documentation
+
+Detailed docs be found at this project's GitHub Pages, thanks to `groc`: <http://thehelp.github.io/messaging>
+
+
 ## Contributing changes
 
 It's a pretty involved project. You'll need Sendgrid and Twilio accounts, and all the environment variables mentioned above.
@@ -192,11 +198,6 @@ When you have some changes ready, please include:
 * A description of how you tested the change. Don't forget about the very-useful `npm link` command :0)
 
 I may ask you to use a `git rebase` to ensure that your commits are not interleaved with commits already in the history. And of course, make sure `grunt` completes successfully (take a look at the requirements for [`thehelp-project`](https://github.com/thehelp/project)). :0)
-
-
-## Detailed Documentation
-
-Detailed docs be found at this project's GitHub Pages, thanks to `groc`: <http://thehelp.github.io/messaging>
 
 
 ## License
