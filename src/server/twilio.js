@@ -31,7 +31,7 @@ function Twilio(options) {
   this.twilio = options.twilio;
   this.development = options.development;
   if (typeof this.development === 'undefined') {
-    options.development = process.env.NODE_ENV === 'development';
+    this.development = process.env.NODE_ENV === 'development';
   }
 
   this.validate = this.validate.bind(this);
