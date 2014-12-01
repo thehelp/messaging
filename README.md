@@ -187,7 +187,7 @@ You'll need some additional environment variables:
 }
 ```
 
-Those last two environment variables are where things get really interesting. You'll need to set up Sendgrid and Twilio to forward messages to your machine. See the 'Receiving messages' section above.
+Those last two environment variables are where things get really interesting. You'll need to set up Sendgrid and Twilio to forward messages to your machine at port `3000`. See the 'Receiving messages' section above.
 
 ### Pull requests
 
