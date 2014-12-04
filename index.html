@@ -173,7 +173,7 @@ app.post('/twilio/sms', bodyParser.urlencoded(), twilio.validate, function(req, 
 }
 </code></pre>
 
-<p>Those last two environment variables are where things get really interesting. You'll need to set up Sendgrid and Twilio to forward messages to your machine. See the 'Receiving messages' section above.</p>
+<p>Those last two environment variables are where things get really interesting. You'll need to set up Sendgrid and Twilio to forward messages to your machine at port <code>3000</code>. See the 'Receiving messages' section above.</p>
 
 <h3 id="pull-requests">Pull requests</h3>
 
