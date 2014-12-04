@@ -1,3 +1,7 @@
+## 1.0.2
+
+* `Twilio`: properly set `development = true` when `NODE_ENV === 'development'`
+
 ## 1.0.1 (2014-10-02)
 
 * Properly handle connectivity/other errors thrown by `superagent` - supply [callback with arity of two](http://visionmedia.github.io/superagent/#error-handling)
