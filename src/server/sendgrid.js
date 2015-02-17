@@ -137,7 +137,7 @@ app.post('/sendgrid/options', sendgrid.parse, function(req, res) {
 ```
 
 _Note: You'll need to supply [`Busboy`](https://github.com/mscdex/busboy) to this class
-on construction if you want to use this middleware method._Note
+on construction if you want to use this middleware method._
 */
 SendGrid.prototype.parse = function parse(req, res, next) {
   var type = req.headers['content-type'] || '';
