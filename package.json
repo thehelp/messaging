@@ -4,7 +4,7 @@
   "main": "src/server/index.js",
 
   "dependencies": {
-    "superagent": "0.19.x"
+    "superagent": "1.x"
   },
   "devDependencies": {
     "body-parser": "1.12.2",
