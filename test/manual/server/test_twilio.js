@@ -1,8 +1,13 @@
 
 'use strict';
 
+var winston = require('winston');
+
 var test = require('thehelp-test');
 var expect = test.expect;
+
+var core = require('thehelp-core');
+var breadcrumbs = core.breadcrumbs;
 
 var Twilio = require('../../../src/server/twilio');
 var app = require('../../start_server');
@@ -86,9 +91,10 @@ describe('Twilio', function() {
 
       expect(err).to.have.property(
         'message',
-        'Authentication Error - No credentials provided'
+        'Unauthorized - Your AccountSid or AuthToken was incorrect.'
       );
       expect(err).to.have.property('options').that.deep.equal(sms);
+      winston.error(breadcrumbs.toString(err));
 
       return done();
     });

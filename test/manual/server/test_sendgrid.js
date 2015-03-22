@@ -1,8 +1,13 @@
 
 'use strict';
 
+var winston = require('winston');
+
 var test = require('thehelp-test');
 var expect = test.expect;
+
+var core = require('thehelp-core');
+var breadcrumbs = core.breadcrumbs;
 
 var Sendgrid = require('../../../src/server/sendgrid');
 var app = require('../../start_server');
@@ -95,8 +100,12 @@ describe('Sendgrid', function() {
 
     sendgrid.send(email, function(err) {
 
-      expect(err).to.have.property('message', 'Permission denied, wrong credentials');
+      expect(err).to.have.property(
+        'message',
+        'Bad Request - Permission denied, wrong credentials'
+      );
       expect(err).to.have.property('options').that.deep.equal(email);
+      winston.error(breadcrumbs.toString(err));
 
       return done();
     });

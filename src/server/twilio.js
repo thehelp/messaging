@@ -78,16 +78,12 @@ Twilio.prototype.send = function send(options, cb) {
 // `_sendFinish` handles the payload returned to us from the call to Twilio.
 Twilio.prototype._sendFinish = function _sendFinish(err, res, options, cb) {
   if (err) {
-    return cb(err);
-  }
-
-  //I've seen only 201 for success. But we allow for 202 as well.
-  if (res.status > 202) {
-    var body = res.body || {};
-
-    err = new Error(body.message || 'Something went wrong!');
+    res = res || {};
+    if (res.body && res.body.detail) {
+      err.message += ' - ' + res.body.detail;
+      delete err.response;
+    }
     err.options = options;
-
     return cb(err);
   }
 

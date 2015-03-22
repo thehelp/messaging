@@ -135,8 +135,10 @@ describe('Sendgrid', function() {
       });
     });
 
-    it('returns error if res.status is 400', function(done) {
+    it('returns error if response has errors array', function(done) {
       var response = 'error from sendgrid';
+
+      var err = new Error('original');
       var res = {
         status: 400,
         body: {
@@ -150,32 +152,37 @@ describe('Sendgrid', function() {
         subject: 'subject'
       };
 
-      sendgrid._sendFinish(null, res, options, function(err) {
-        expect(err).to.have.property('message').that.equal(response);
+      sendgrid._sendFinish(err, res, options, function(err) {
+        expect(err).to.have.property('message').that.equal('original - ' + response);
         expect(err).to.have.property('options').that.deep.equal(options);
+        expect(err).not.to.have.property('response');
 
         done();
       });
     });
 
-    it('handles a null body', function(done) {
+    it('returns error if response has multiple errors in array', function(done) {
+      var response = 'error from sendgrid';
+
+      var err = new Error('original');
       var res = {
-        status: 400
+        status: 400,
+        body: {
+          errors: [response, response]
+        }
+      };
+      var options = {
+        to: 'blah',
+        from: 'blah',
+        text: 'something',
+        subject: 'subject'
       };
 
-      sendgrid._sendFinish(null, res, null, function(err) {
-        expect(err).to.have.property('message').that.equal('Something went wrong!');
-        done();
-      });
-    });
+      sendgrid._sendFinish(err, res, options, function(err) {
+        expect(err).to.have.property('message').that.equal('original - ' + response);
+        expect(err).to.have.property('options').that.deep.equal(options);
+        expect(err).to.have.property('errors').that.has.length(2);
 
-    it('handles a null body', function(done) {
-      var res = {
-        status: 400
-      };
-
-      sendgrid._sendFinish(null, res, null, function(err) {
-        expect(err).to.have.property('message').that.equal('Something went wrong!');
         done();
       });
     });

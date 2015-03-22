@@ -92,20 +92,16 @@ SendGrid.prototype.send = function send(options, cb) {
 // `_sendFinish` handles the payload returned to us from the call to Sendgrid.
 SendGrid.prototype._sendFinish = function _sendFinish(err, res, options, cb) {
   if (err) {
-    return cb(err);
-  }
+    res = res || {};
+    if (res.body && res.body.errors && res.body.errors.length) {
+      err.message += ' - ' + res.body.errors[0];
 
-  if (res.status !== 200) {
-    var body = res.body || {};
-    var message = body.message;
-
-    if (body.errors && body.errors.length) {
-      message = body.errors[0];
+      if (res.body.errors.length > 1) {
+        err.errors = res.body.errors;
+      }
+      delete err.response;
     }
-
-    err = new Error(message || 'Something went wrong!');
     err.options = options;
-
     return cb(err);
   }
 
