@@ -12,8 +12,8 @@
     "express": "4.12.3",
     "grunt": "0.4.5",
     "morgan": "1.5.2",
-    "thehelp-project": "3.4.1",
-    "thehelp-test": "3.3.0",
+    "thehelp-project": "3.5.0",
+    "thehelp-test": "3.4.1",
     "twilio": "1.11.1"
   },
 
