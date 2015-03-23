@@ -1,4 +1,11 @@
-## 1.0.2
+## 1.1.0 (2015-03-22)
+
+* With upgrade of `superagent` to 1.x, the exact set of errors returned by calls has changed. Notable changes: new `status` property, and the `message` is now in this format: `<ENGLISH HTTP CODE, like 'Unauthorized'> - <DETAIL>`
+* Add node 0.12 and iojs 1.5/1.6 to travis config
+* Update dependencies
+* Remove docs from npm package
+
+## 1.0.2 (2014-12-04)
 
 * `Twilio`: properly set `development = true` when `NODE_ENV === 'development'`
 
