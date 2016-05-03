@@ -2,7 +2,7 @@
 
 # thehelp-messaging
 
-A lightweight package for sending SMS via [Twilio](https://www.twilio.com), and email via [Sendgrid](http://sendgrid.com/). Also makes it easy to receive SMS and email from these services in [`express`](http://expressjs.com/)-based apps.
+A lightweight package for sending SMS via [Twilio](https://www.twilio.com), and email via [Sendgrid](http://sendgrid.com/). Also makes it easy to receive SMS and email from these services in [`express`](http://expressjs.com/)-based apps. [More information about `thehelp`.](https://blog.scottnonnenberg.com/the-state-of-thehelp/)
 
 
 ## Setup
