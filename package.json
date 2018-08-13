@@ -2,9 +2,8 @@
   "name": "thehelp-messaging",
   "version": "1.1.0",
   "main": "src/server/index.js",
-
   "dependencies": {
-    "superagent": "1.x"
+    "superagent": "3.x"
   },
   "devDependencies": {
     "body-parser": "1.12.2",
@@ -18,11 +17,9 @@
     "twilio": "1.11.1",
     "winston": "0.9.0"
   },
-
   "scripts": {
     "test": "grunt"
   },
-
   "description": "A lightweight package for sending SMS via Twilio, and email via Sendgrid. Also makes it easy to receive SMS and email from these services in express-based apps.",
   "keywords": [
     "twilio",
@@ -35,10 +32,8 @@
     "lightweight",
     "simple"
   ],
-
   "author": "Scott Nonnenberg",
   "license": "MIT",
-
   "homepage": "https://github.com/thehelp/messaging",
   "repository": {
     "type": "git",
